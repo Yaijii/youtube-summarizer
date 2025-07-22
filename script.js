@@ -168,7 +168,7 @@ class YouTubeSummarizer {
             
             // 3. Générer le résumé intelligent
             this.updateLoadingMessage('🤖 Génération du résumé intelligent...');
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulation traitement IA
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const summary = this.generateSummary(videoData, transcript);
             
             // 4. Afficher le résultat
@@ -232,7 +232,6 @@ class YouTubeSummarizer {
         console.log('🎤 Recherche de transcription pour:', videoId);
         
         try {
-            // 1. Récupérer la liste des sous-titres disponibles
             const captionsUrl = `https://www.googleapis.com/youtube/v3/captions?part=snippet&videoId=${videoId}&key=${this.YOUTUBE_API_KEY}`;
             const captionsResponse = await fetch(captionsUrl);
             const captionsData = await captionsResponse.json();
@@ -247,7 +246,6 @@ class YouTubeSummarizer {
                 return this.generateFallbackTranscript('Pas de sous-titres');
             }
             
-            // 2. Analyser les sous-titres disponibles
             const availableCaptions = captionsData.items.map(item => ({
                 id: item.id,
                 language: item.snippet.language,
@@ -258,7 +256,6 @@ class YouTubeSummarizer {
             
             console.log('📝 Sous-titres disponibles:', availableCaptions);
             
-            // 3. Sélectionner le meilleur sous-titre
             const bestCaption = this.selectBestCaption(availableCaptions);
             
             if (bestCaption) {
@@ -267,11 +264,8 @@ class YouTubeSummarizer {
                     language: bestCaption.language,
                     name: bestCaption.name,
                     trackKind: bestCaption.trackKind,
-                    content: `Sous-titres détectés en ${bestCaption.language} (${bestCaption.name}). 
-                             Type: ${bestCaption.trackKind}. 
-                             Le contenu de la transcription est accessible mais nécessite 
-                             une authentification OAuth2 pour le téléchargement complet.`,
-                    wordCount: Math.floor(Math.random() * 1000) + 500, // Simulation
+                    content: `Sous-titres détectés en ${bestCaption.language} (${bestCaption.name})`,
+                    wordCount: Math.floor(Math.random() * 1000) + 500,
                     confidence: bestCaption.isEasilyReadable ? 'Élevée' : 'Moyenne'
                 };
             }
@@ -284,25 +278,19 @@ class YouTubeSummarizer {
         }
     }
     
-    // 🎯 Sélection du meilleur sous-titre
     selectBestCaption(captions) {
-        // Priorité aux sous-titres français
         const frenchCaption = captions.find(cap => cap.language === 'fr');
         if (frenchCaption) return frenchCaption;
         
-        // Puis anglais
         const englishCaption = captions.find(cap => cap.language === 'en');
         if (englishCaption) return englishCaption;
         
-        // Puis automatiques facilement lisibles
         const readableCaption = captions.find(cap => cap.isEasilyReadable);
         if (readableCaption) return readableCaption;
         
-        // Sinon le premier disponible
         return captions[0] || null;
     }
     
-    // 📝 Génération de transcription de fallback
     generateFallbackTranscript(reason) {
         return {
             available: false,
@@ -322,8 +310,7 @@ class YouTubeSummarizer {
         const keyPoints = this.extractKeyPoints(videoData.description, videoData.title);
         const sentiment = this.analyzeSentiment(videoData.likeCount, videoData.viewCount, videoData.commentCount);
         
-        const summary = `
-🎯 **RÉSUMÉ VIDÉO YOUTUBE (DONNÉES OFFICIELLES API)**
+        return `🎯 **RÉSUMÉ VIDÉO YOUTUBE (DONNÉES API OFFICIELLES)**
 
 **📺 "${videoData.title}"**
 *Chaîne: ${videoData.channelTitle}*
@@ -341,27 +328,19 @@ ${keyPoints.map((point, index) => `${index + 1}. ${point}`).join('\n')}
 • **⏱️ Durée :** ${videoData.duration}
 • **📅 Publié :** ${this.formatDate(videoData.publishedAt)}
 • **🏷️ Catégorie :** ${category}
-• **🌍 Langue :** ${videoData.defaultLanguage}
 
 ${hasTranscript ? `
 🎤 **ANALYSE DE TRANSCRIPTION**
 • **Sous-titres disponibles :** ✅ Oui (${transcript.language})
 • **Type :** ${transcript.name}
 • **Qualité :** ${transcript.confidence}
-• **Méthode :** ${transcript.trackKind}
-• **Mots estimés :** ${transcript.wordCount || 'N/A'}
-• **Accessibilité :** ${transcript.trackKind === 'asr' ? 'Générés automatiquement' : 'Sous-titres manuels'}
 ` : `
 ⚠️ **TRANSCRIPTION NON DISPONIBLE**
 • **Raison :** ${transcript.reason}
 • **Sous-titres :** ❌ Non disponibles
-• **Analyse :** Basée sur métadonnées uniquement
-• **Alternative :** Résumé généré depuis titre + description
 `}
 
 📈 **ANALYSE D'ENGAGEMENT**
-• **Ratio likes/vues :** ${this.calculateEngagementRatio(videoData.likeCount, videoData.viewCount)}
-• **Commentaires/vues :** ${this.calculateCommentRatio(videoData.commentCount, videoData.viewCount)}
 • **Popularité :** ${sentiment.popularity}
 • **Tendance :** ${sentiment.trend}
 
@@ -369,124 +348,46 @@ ${hasTranscript ? `
 • **ID Vidéo :** ${videoData.id}
 • **URL source :** https://www.youtube.com/watch?v=${videoData.id}
 • **Méthode d'analyse :** YouTube Data API v3
-• **Timestamp analyse :** ${new Date().toLocaleString('fr-FR')}
-• **Tags détectés :** ${videoData.tags.length} tags
+• **Timestamp :** ${new Date().toLocaleString('fr-FR')}
 
-${videoData.tags.length > 0 ? `
-🏷️ **TAGS PRINCIPAUX**
-${videoData.tags.slice(0, 8).map(tag => `#${tag}`).join(', ')}
-` : ''}
-
-💡 **DONNÉES AUTHENTIQUES YOUTUBE**
-Toutes les statistiques proviennent directement de l'API officielle YouTube Data v3.
-Les informations sont mises à jour en temps réel depuis les serveurs de Google.
-
-🎉 **ANALYSE RÉUSSIE : ${this.successCount + 1}/${this.totalAttempts + 1} (${Math.round(((this.successCount + 1) / (this.totalAttempts + 1)) * 100)}%)**
-        `.trim();
-        
-        return summary;
+🎉 **ANALYSE RÉUSSIE : ${this.successCount + 1}/${this.totalAttempts + 1} (${Math.round(((this.successCount + 1) / (this.totalAttempts + 1)) * 100)}%)**`;
     }
     
-    // 📊 Calcul du ratio d'engagement
-    calculateEngagementRatio(likes, views) {
-        if (!views || views === 0) return '0.0%';
-        const ratio = (likes / views) * 100;
-        if (ratio > 5) return `${ratio.toFixed(1)}% (Excellent)`;
-        if (ratio > 2) return `${ratio.toFixed(1)}% (Très bon)`;
-        if (ratio > 1) return `${ratio.toFixed(1)}% (Bon)`;
-        return `${ratio.toFixed(1)}% (Moyen)`;
-    }
-    
-    calculateCommentRatio(comments, views) {
-        if (!views || views === 0) return '0.0%';
-        const ratio = (comments / views) * 100;
-        if (ratio > 1) return `${ratio.toFixed(2)}% (Très interactif)`;
-        if (ratio > 0.5) return `${ratio.toFixed(2)}% (Interactif)`;
-        if (ratio > 0.1) return `${ratio.toFixed(2)}% (Modéré)`;
-        return `${ratio.toFixed(2)}% (Faible)`;
-    }
-    
-    // 📊 Analyse du sentiment
-    analyzeSentiment(likes, views, comments) {
-        const likeRatio = views > 0 ? (likes / views) * 100 : 0;
-        const commentRatio = views > 0 ? (comments / views) * 100 : 0;
-        
-        let popularity = 'Moyenne';
-        if (views > 1000000) popularity = 'Virale';
-        else if (views > 100000) popularity = 'Très populaire';
-        else if (views > 10000) popularity = 'Populaire';
-        
-        let trend = 'Stable';
-        if (likeRatio > 3) trend = 'En hausse';
-        else if (commentRatio > 0.5) trend = 'Engageante';
-        
-        return { popularity, trend };
-    }
-    
-    // 📊 Génération de résumé intelligent basé sur les vraies données
     generateIntelligentSummary(videoData, transcript) {
         const title = videoData.title.toLowerCase();
-        const description = videoData.description.toLowerCase();
         
-        // Détection intelligente du type de contenu
         if (title.includes('tutoriel') || title.includes('tutorial') || title.includes('comment') || title.includes('how to')) {
-            return `🎓 **Tutoriel éducatif** par ${videoData.channelTitle}. Ce guide détaillé "${videoData.title}" a été visionné ${this.formatNumber(videoData.viewCount)} fois et a reçu ${this.formatNumber(videoData.likeCount)} likes, témoignant de sa qualité pédagogique. La vidéo propose un apprentissage structuré avec des étapes claires et des explications détaillées.`;
+            return `🎓 **Tutoriel éducatif** par ${videoData.channelTitle}. Ce guide détaillé a été visionné ${this.formatNumber(videoData.viewCount)} fois avec ${this.formatNumber(videoData.likeCount)} likes.`;
         }
         
-        if (title.includes('review') || title.includes('test') || title.includes('critique') || title.includes('avis')) {
-            return `⭐ **Review complète** réalisée par ${videoData.channelTitle}. Cette analyse approfondie de "${videoData.title}" présente tous les aspects importants avec un regard critique et objectif. Avec ${this.formatNumber(videoData.viewCount)} vues et un taux d'engagement élevé, cette review est devenue une référence.`;
+        if (title.includes('music') || title.includes('song') || title.includes('clip')) {
+            return `🎵 **Contenu musical** de ${videoData.channelTitle}. Cette création artistique a captivé ${this.formatNumber(videoData.viewCount)} spectateurs.`;
         }
         
-        if (title.includes('news') || title.includes('actualité') || title.includes('breaking') || description.includes('news')) {
-            return `📰 **Actualités récentes** présentées par ${videoData.channelTitle}. Cette vidéo couvre "${videoData.title}" avec les dernières informations et développements. Publiée le ${this.formatDate(videoData.publishedAt)}, elle a rapidement atteint ${this.formatNumber(videoData.viewCount)} vues.`;
+        if (title.includes('gaming') || title.includes('jeu') || title.includes('gameplay')) {
+            return `🎮 **Contenu gaming** proposé par ${videoData.channelTitle}. Cette session de jeu offre ${videoData.duration} de divertissement avec forte interaction communautaire.`;
         }
         
-        if (title.includes('music') || title.includes('song') || title.includes('clip') || title.includes('musique')) {
-            return `🎵 **Contenu musical** de ${videoData.channelTitle}. "${videoData.title}" est une création artistique qui a captivé ${this.formatNumber(videoData.viewCount)} spectateurs. La communauté a réagi très positivement avec ${this.formatNumber(videoData.likeCount)} likes et ${this.formatNumber(videoData.commentCount)} commentaires.`;
-        }
-        
-        if (title.includes('gaming') || title.includes('jeu') || title.includes('gameplay') || title.includes('let\'s play')) {
-            return `🎮 **Contenu gaming** proposé par ${videoData.channelTitle}. Cette session de jeu sur "${videoData.title}" offre ${videoData.duration} de divertissement pur. La vidéo a généré une forte interaction communautaire avec ${this.formatNumber(videoData.commentCount)} commentaires d'autres joueurs.`;
-        }
-        
-        // Résumé générique intelligent basé sur les données réelles
-        const engagementLevel = videoData.viewCount > 1000000 ? 'exceptionnelle' : 
-                               videoData.viewCount > 100000 ? 'très forte' : 
-                               videoData.viewCount > 10000 ? 'notable' : 'modérée';
-        
-        return `🎬 **Contenu vidéo** de qualité proposé par ${videoData.channelTitle}. "${videoData.title}" présente un sujet captivant qui a suscité une audience ${engagementLevel} avec ${this.formatNumber(videoData.viewCount)} vues. La communauté apprécie ce contenu comme en témoignent les ${this.formatNumber(videoData.likeCount)} likes reçus.`;
+        return `🎬 **Contenu vidéo** de qualité proposé par ${videoData.channelTitle}. "${videoData.title}" a suscité une audience notable avec ${this.formatNumber(videoData.viewCount)} vues et ${this.formatNumber(videoData.likeCount)} likes.`;
     }
     
-    // 🔍 Extraction des points clés depuis la description
     extractKeyPoints(description, title) {
         const points = [];
         
         try {
-            // Recherche de listes à puces dans la description
             const bulletRegex = /^[\s]*[•\-\*\d+\.]\s*(.+)$/gm;
             const bulletPoints = description.match(bulletRegex);
             if (bulletPoints && bulletPoints.length > 0) {
-                return bulletPoints.slice(0, 6).map(point => 
+                return bulletPoints.slice(0, 5).map(point => 
                     point.replace(/^[\s]*[•\-\*\d+\.]\s*/, '').trim()
                 ).filter(point => point.length > 10 && point.length < 200);
             }
             
-            // Recherche de timestamps (structure de contenu)
-            const timestampRegex = /(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–]\s*(.+?)(?=\n|\d{1,2}:\d{2}|$)/g;
-            const timestamps = [...description.matchAll(timestampRegex)];
-            if (timestamps.length > 0) {
-                return timestamps.slice(0, 6).map(match => 
-                    `${match[1]} - ${match[2].trim()}`
-                );
-            }
-            
-            // Extraction de phrases importantes
             const sentences = description.split(/[.!?]+/)
                 .filter(s => s.length > 20 && s.length < 200)
                 .map(s => s.trim())
                 .filter(s => !s.toLowerCase().includes('abonne') && 
-                            !s.toLowerCase().includes('like') &&
-                            !s.toLowerCase().includes('follow'));
+                            !s.toLowerCase().includes('like'));
             
             if (sentences.length > 0) {
                 return sentences.slice(0, 5);
@@ -496,34 +397,27 @@ Les informations sont mises à jour en temps réel depuis les serveurs de Google
             console.log('⚠️ Erreur extraction points clés:', error);
         }
         
-        // Points génériques intelligents basés sur le titre
         const titleWords = title.split(' ').filter(word => word.length > 3);
         return [
             `Analyse détaillée de "${titleWords.slice(0, 4).join(' ')}"`,
-            `Contenu expert avec démonstrations pratiques`,
-            `Informations structurées et bien documentées`,
-            `Guide complet avec exemples concrets`,
-            `Ressource de référence pour la communauté`
+            'Contenu expert avec démonstrations pratiques',
+            'Informations structurées et bien documentées',
+            'Guide complet avec exemples concrets',
+            'Ressource de référence pour la communauté'
         ];
     }
     
-    // 🏷️ Détermination intelligente de la catégorie
     determineCategory(tags, title, description) {
         const allText = `${title} ${description} ${tags.join(' ')}`.toLowerCase();
         
         const categories = [
-            { keywords: ['tech', 'programming', 'code', 'software', 'developer', 'coding'], emoji: '💻', name: 'Technologie' },
-            { keywords: ['music', 'song', 'album', 'artist', 'musical', 'musique'], emoji: '🎵', name: 'Musique' },
-            { keywords: ['game', 'gaming', 'gameplay', 'player', 'jeu', 'gamer'], emoji: '🎮', name: 'Gaming' },
-            { keywords: ['sport', 'football', 'fitness', 'workout', 'training'], emoji: '⚽', name: 'Sport' },
-            { keywords: ['cooking', 'recipe', 'food', 'cuisine', 'chef'], emoji: '🍳', name: 'Cuisine' },
-            { keywords: ['travel', 'voyage', 'trip', 'tourism', 'destination'], emoji: '✈️', name: 'Voyage' },
-            { keywords: ['education', 'learn', 'tutorial', 'cours', 'lesson'], emoji: '📚', name: 'Éducation' },
-            { keywords: ['news', 'actualité', 'politics', 'current', 'breaking'], emoji: '📰', name: 'Actualités' },
-            { keywords: ['beauty', 'makeup', 'fashion', 'style', 'beauté'], emoji: '💄', name: 'Beauté & Mode' },
-            { keywords: ['science', 'research', 'experiment', 'scientific'], emoji: '🔬', name: 'Science' },
-            { keywords: ['movie', 'film', 'cinema', 'review', 'trailer'], emoji: '🎬', name: 'Cinéma' },
-            { keywords: ['health', 'medical', 'healthcare', 'santé', 'medicine'], emoji: '🏥', name: 'Santé' }
+            { keywords: ['tech', 'programming', 'code'], name: '💻 Technologie' },
+            { keywords: ['music', 'song', 'musique'], name: '🎵 Musique' },
+            { keywords: ['game', 'gaming', 'jeu'], name: '🎮 Gaming' },
+            { keywords: ['sport', 'fitness'], name: '⚽ Sport' },
+            { keywords: ['cooking', 'cuisine'], name: '🍳 Cuisine' },
+            { keywords: ['tutorial', 'cours'], name: '📚 Éducation' },
+            { keywords: ['news', 'actualité'], name: '📰 Actualités' }
         ];
         
         for (const category of categories) {
@@ -531,13 +425,26 @@ Les informations sont mises à jour en temps réel depuis les serveurs de Google
                 return count + (allText.includes(keyword) ? 1 : 0);
             }, 0);
             
-            if (matchCount >= 2) {
-                return `${category.emoji} ${category.name}`;
+            if (matchCount >= 1) {
+                return category.name;
             }
         }
         
-        // Fallback basé sur le nombre de vues et de tags
         return '🎬 Divertissement';
+    }
+    
+    analyzeSentiment(likes, views, comments) {
+        let popularity = 'Moyenne';
+        if (views > 1000000) popularity = 'Virale';
+        else if (views > 100000) popularity = 'Très populaire';
+        else if (views > 10000) popularity = 'Populaire';
+        
+        const likeRatio = views > 0 ? (likes / views) * 100 : 0;
+        let trend = 'Stable';
+        if (likeRatio > 3) trend = 'En hausse';
+        else if (likeRatio > 1) trend = 'Positive';
+        
+        return { popularity, trend };
     }
     
     // 🔧 MÉTHODES UTILITAIRES
@@ -565,7 +472,7 @@ Les informations sont mises à jour en temps réel depuis les serveurs de Google
             const seconds = parseInt(match[3]) || 0;
             
             if (hours > 0) {
-                return `${hours}h${minutes.toString().padStart(2, '0')}m${seconds.toString().padStart(2, '0')}s`;
+                return `${hours}h${minutes.toString().padStart(2, '0')}m`;
             } else {
                 return `${minutes}m${seconds.toString().padStart(2, '0')}s`;
             }
@@ -576,9 +483,87 @@ Les informations sont mises à jour en temps réel depuis les serveurs de Google
     
     extractVideoId(url) {
         const patterns = [
-            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
-            /youtube\.com\/playlist\?list=([^&\n?#]+)/
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/
         ];
         
         for (const pattern of patterns) {
-            const match = url
+            const match = url.match(pattern);
+            if (match) return match[1];
+        }
+        return null;
+    }
+    
+    // Interface methods
+    showLoading(message) {
+        if (this.loading) this.loading.classList.remove('hidden');
+        this.updateLoadingMessage(message);
+        if (this.result) this.result.classList.add('hidden');
+        if (this.error) this.error.classList.add('hidden');
+    }
+    
+    updateLoadingMessage(message) {
+        if (this.loadingMessage) this.loadingMessage.textContent = message;
+    }
+    
+    showResult(summary) {
+        if (this.loading) this.loading.classList.add('hidden');
+        if (this.summaryText) this.summaryText.textContent = summary;
+        if (this.result) this.result.classList.remove('hidden');
+        if (this.error) this.error.classList.add('hidden');
+    }
+    
+    showError(message) {
+        if (this.loading) this.loading.classList.add('hidden');
+        if (this.result) this.result.classList.add('hidden');
+        if (this.error) {
+            this.error.textContent = message;
+            this.error.classList.remove('hidden');
+        }
+        console.error('Erreur:', message);
+    }
+    
+    disableButton() {
+        if (this.summarizeBtn) {
+            this.summarizeBtn.disabled = true;
+            this.summarizeBtn.textContent = '⏳ Traitement...';
+        }
+    }
+    
+    enableButton() {
+        if (this.summarizeBtn) {
+            this.summarizeBtn.disabled = false;
+            this.summarizeBtn.textContent = '🎯 Analyser';
+        }
+    }
+    
+    incrementSuccess(method) {
+        this.successCount++;
+        this.lastMethod = method;
+        localStorage.setItem('successCount', this.successCount.toString());
+        localStorage.setItem('totalAttempts', this.totalAttempts.toString());
+        localStorage.setItem('lastMethod', method);
+    }
+}
+
+// Fonctions globales
+function downloadSummary() {
+    const text = document.getElementById('summaryText').innerText;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `YouTube-Resume-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function newSummary() {
+    document.getElementById('youtubeUrl').value = '';
+    document.getElementById('youtubeUrl').focus();
+    document.getElementById('result').classList.add('hidden');
+}
+
+// Initialisation
+const summarizer = new YouTubeSummarizer();
+
+console.log('✅ YouTube Summarizer avec API chargé complètement !');
