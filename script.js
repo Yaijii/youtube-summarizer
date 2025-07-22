@@ -9,7 +9,7 @@ class YouTubeSummarizer {
         console.log('🏗️ Initialisation avec YouTube Data API...');
         
         // 🔑 VOTRE CLÉ YOUTUBE API (CONFIGURÉE)
-        this.YOUTUBE_API_KEY = 'AIzaSyAg74Hqn2rw4x4YBBuqT8a40CH_cus_qyg';
+        this.YOUTUBE_API_KEY = 'AIzaSyCVFCPIXy2b3q3NWNjwjYjfyRPLfxUqcSY';
         
         this.successCount = parseInt(localStorage.getItem('successCount') || '0');
         this.totalAttempts = parseInt(localStorage.getItem('totalAttempts') || '0');
