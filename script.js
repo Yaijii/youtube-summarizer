@@ -1,3 +1,7 @@
+/*===============================================
+   YOUTUBE SUMMARIZER - VERSION AVEC API RÉELLE
+===============================================*/
+
 class YouTubeSummarizerReal {
     constructor() {
         // 🔑 CONFIGUREZ VOTRE CLÉ API ICI
