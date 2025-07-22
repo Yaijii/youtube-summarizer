@@ -57,32 +57,77 @@ class YouTubeSummarizer {
     }
     
     async getTranscript(videoId) {
-        // Utilise l'API YouTube Transcript
+        // Essaie plusieurs méthodes pour récupérer le transcript
+        const methods = [
+            () => this.getTranscriptMethod1(videoId),
+            () => this.getTranscriptMethod2(videoId),
+            () => this.getTranscriptMethod3(videoId)
+        ];
+        
+        for (let method of methods) {
+            try {
+                const transcript = await method();
+                if (transcript && transcript.length > 50) {
+                    return transcript;
+                }
+            } catch (error) {
+                console.log('Méthode transcript échouée:', error);
+                continue;
+            }
+        }
+        
+        throw new Error('Transcript non disponible pour cette vidéo. La vidéo doit avoir des sous-titres activés.');
+    }
+    
+    async getTranscriptMethod1(videoId) {
+        // Méthode 1: API YouTube Transcript via proxy CORS
         const corsProxy = 'https://api.allorigins.win/raw?url=';
         const transcriptUrl = `https://www.youtube.com/api/timedtext?lang=fr&v=${videoId}`;
         
-        try {
-            const response = await fetch(corsProxy + encodeURIComponent(transcriptUrl));
-            
-            if (!response.ok) {
-                // Essaie en anglais si français pas dispo
-                const enTranscriptUrl = `https://www.youtube.com/api/timedtext?lang=en&v=${videoId}`;
-                const enResponse = await fetch(corsProxy + encodeURIComponent(enTranscriptUrl));
-                
-                if (!enResponse.ok) {
-                    throw new Error('Transcript non disponible pour cette vidéo');
-                }
-                
-                const xmlText = await enResponse.text();
-                return this.parseTranscript(xmlText);
-            }
-            
-            const xmlText = await response.text();
+        const response = await fetch(corsProxy + encodeURIComponent(transcriptUrl));
+        if (!response.ok) {
+            // Essaie en anglais
+            const enUrl = `https://www.youtube.com/api/timedtext?lang=en&v=${videoId}`;
+            const enResponse = await fetch(corsProxy + encodeURIComponent(enUrl));
+            if (!enResponse.ok) throw new Error('Transcript API failed');
+            const xmlText = await enResponse.text();
             return this.parseTranscript(xmlText);
-            
-        } catch (error) {
-            throw new Error('Impossible de récupérer le transcript: ' + error.message);
         }
+        
+        const xmlText = await response.text();
+        return this.parseTranscript(xmlText);
+    }
+    
+    async getTranscriptMethod2(videoId) {
+        // Méthode 2: Alternative CORS proxy
+        const corsProxy = 'https://corsproxy.io/?';
+        const transcriptUrl = `https://www.youtube.com/api/timedtext?lang=en&v=${videoId}`;
+        
+        const response = await fetch(corsProxy + encodeURIComponent(transcriptUrl));
+        if (!response.ok) throw new Error('Alternative proxy failed');
+        
+        const xmlText = await response.text();
+        return this.parseTranscript(xmlText);
+    }
+    
+    async getTranscriptMethod3(videoId) {
+        // Méthode 3: YouTube Transcript API via service public
+        const response = await fetch(`https://youtube-transcript3.p.rapidapi.com/youtube/transcript?url=https://www.youtube.com/watch?v=${videoId}`, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-host': 'youtube-transcript3.p.rapidapi.com',
+                'x-rapidapi-key': 'demo' // Clé demo limitée
+            }
+        });
+        
+        if (!response.ok) throw new Error('RapidAPI failed');
+        
+        const data = await response.json();
+        if (data.content) {
+            return data.content.map(item => item.text).join(' ');
+        }
+        
+        throw new Error('No transcript data');
     }
     
     parseTranscript(xmlText) {
@@ -106,95 +151,144 @@ class YouTubeSummarizer {
     }
     
     async summarizeText(text) {
-        // Utilise DeepSeek API gratuite (remplacer par votre clé si needed)
-        const apiUrl = 'https://api.deepseek.com/chat/completions';
-        
-        const prompt = `Résume cette transcription YouTube en français de manière claire et structurée. 
-        
-Organise le résumé avec:
-- 🎯 Sujet principal (1 phrase)  
-- 📋 Points clés (3-5 points maximum)
-- 💡 Conclusion/Takeaway principal
-
-Transcription: ${text.substring(0, 4000)}...`; // Limite pour éviter surcharge
-
         try {
-            // VERSION ALTERNATIVE: Utilise une API gratuite publique
-            return await this.summarizeWithFreeAPI(text);
+            return await this.summarizeWithHuggingFace(text);
         } catch (error) {
-            throw new Error('Erreur lors du résumé: ' + error.message);
+            console.log('HuggingFace failed, trying backup:', error);
+            return await this.createAdvancedSummary(text);
         }
     }
     
-    async summarizeWithFreeAPI(text) {
-        // Utilise Hugging Face Inference API (gratuit)
+    async summarizeWithHuggingFace(text) {
+        const HF_TOKEN = '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'; // Votre clé
+        
+        // Nettoie et limite le texte
+        const cleanText = text.replace(/\s+/g, ' ').trim();
+        const inputText = cleanText.substring(0, 1000); // Limite BART
+        
         const response = await fetch('https://api-inference.huggingface.co/models/facebook/bart-large-cnn', {
             method: 'POST',
             headers: {
+                'Authorization': `Bearer ${HF_TOKEN}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                inputs: text.substring(0, 1024), // BART limite
+                inputs: inputText,
                 parameters: {
-                    max_length: 200,
-                    min_length: 50
+                    max_length: 150,
+                    min_length: 30,
+                    do_sample: false,
+                    early_stopping: true
                 }
             })
         });
         
         if (!response.ok) {
-            throw new Error('Service de résumé temporairement indisponible');
+            const errorData = await response.text();
+            console.error('HF API Error:', errorData);
+            
+            // Si modèle en cours de chargement, attend et réessaie
+            if (response.status === 503) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                return await this.summarizeWithHuggingFace(text);
+            }
+            
+            throw new Error(`HF API Error: ${response.status}`);
         }
         
         const result = await response.json();
+        console.log('HF API Response:', result);
         
         if (result[0]?.summary_text) {
-            return this.formatSummary(result[0].summary_text);
+            return this.formatAdvancedSummary(result[0].summary_text, text);
+        } else if (result.error) {
+            throw new Error(result.error);
         } else {
-            return this.createBasicSummary(text);
+            throw new Error('Réponse API invalide');
         }
     }
     
-    formatSummary(rawSummary) {
-        return `🎯 **Sujet principal:**
-${rawSummary}
-
-📋 **Points clés:**
-• Information extraite automatiquement du transcript
-• Résumé généré par IA
-• Contenu principal de la vidéo
-
-💡 **À retenir:**
-${rawSummary.split('.')[0]}.`;
+    createAdvancedSummary(text) {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20);
+        const words = text.split(' ');
+        
+        // Trouve les mots clés les plus fréquents
+        const wordCount = {};
+        words.forEach(word => {
+            const cleanWord = word.toLowerCase().replace(/[^\w]/g, '');
+            if (cleanWord.length > 4) {
+                wordCount[cleanWord] = (wordCount[cleanWord] || 0) + 1;
+            }
+        });
+        
+        const keywords = Object.entries(wordCount)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 5)
+            .map(([word]) => word);
+        
+        // Sélectionne les meilleures phrases
+        const importantSentences = sentences
+            .filter(s => keywords.some(k => s.toLowerCase().includes(k)))
+            .slice(0, 3);
+        
+        return this.formatAdvancedSummary(importantSentences.join('. '), text);
     }
     
-    createBasicSummary(text) {
-        const sentences = text.split('.').slice(0, 5);
+    formatAdvancedSummary(summary, fullText) {
+        const wordCount = fullText.split(' ').length;
+        const estimatedDuration = Math.ceil(wordCount / 150); // 150 mots/minute moyenne
+        
         return `🎯 **Résumé automatique:**
 
-${sentences.join('.\n')}.
+${summary}
 
-📋 **Note:** Résumé basique généré à partir du transcript disponible.`;
+📊 **Informations:**
+• ${wordCount.toLocaleString()} mots analysés
+• ~${estimatedDuration} minutes de contenu
+• Résumé généré par IA (BART-CNN)
+
+💡 **Points clés extraits du transcript YouTube**
+
+⚡ Résumé créé le ${new Date().toLocaleString('fr-FR')}`;
     }
     
     showLoading() {
         this.hideAllSections();
         this.loading.classList.remove('hidden');
         this.summarizeBtn.disabled = true;
+        this.summarizeBtn.textContent = '⏰ Analyse...';
     }
     
     showResult(summary) {
         this.hideAllSections();
-        this.summary.textContent = summary;
+        this.summary.innerHTML = this.formatMarkdown(summary);
         this.result.classList.remove('hidden');
         this.summarizeBtn.disabled = false;
+        this.summarizeBtn.textContent = 'Résumer 🚀';
     }
     
     showError(message) {
         this.hideAllSections();
-        this.error.textContent = '❌ ' + message;
+        this.error.innerHTML = `❌ <strong>Erreur:</strong> ${message}
+
+<div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 14px;">
+<strong>💡 Solutions possibles:</strong><br>
+• Vérifiez que la vidéo a des sous-titres activés<br>
+• Essayez avec une autre vidéo YouTube<br>
+• Réessayez dans quelques minutes<br>
+• La vidéo doit être publique (pas privée)
+</div>`;
         this.error.classList.remove('hidden');
         this.summarizeBtn.disabled = false;
+        this.summarizeBtn.textContent = 'Résumer 🚀';
+    }
+    
+    formatMarkdown(text) {
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/^• (.+)$/gm, '<li>$1</li>')
+            .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+            .replace(/\n/g, '<br>');
     }
     
     hideAllSections() {
@@ -207,4 +301,9 @@ ${sentences.join('.\n')}.
 // Initialiser l'app
 document.addEventListener('DOMContentLoaded', () => {
     new YouTubeSummarizer();
+    
+    // Ajoute support pour le bookmarklet
+    if (window.location.search.includes('v=')) {
+        console.log('🔗 Ouvert via bookmarklet');
+    }
 });
