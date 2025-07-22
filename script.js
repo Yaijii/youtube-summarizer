@@ -1,7 +1,3 @@
-// ============================
-// YOUTUBE SUMMARIZER - VERSION HYBRIDE GRATUITE
-// ============================
-
 class YouTubeSummarizer {
     constructor() {
         // 🔑 REMPLACEZ PAR VOTRE CLÉ API YOUTUBE
