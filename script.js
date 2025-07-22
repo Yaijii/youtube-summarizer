@@ -1,6 +1,3 @@
-## 🔥 **SCRIPT.JS COMPLET - VERSION FINALE**
-
-```javascript
 // ============================
 // YOUTUBE SUMMARIZER - VERSION HYBRIDE GRATUITE
 // ============================
