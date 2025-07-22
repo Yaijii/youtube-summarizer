@@ -23,7 +23,7 @@ class YouTubeSummarizer {
     init() {
         console.log('🔍 Recherche des éléments DOM...');
         
-        // Recherche des éléments avec debug
+        // Recherche des éléments
         this.urlInput = document.getElementById('youtubeUrl');
         this.summarizeBtn = document.getElementById('summarizeBtn');
         this.loading = document.getElementById('loading');
@@ -40,10 +40,9 @@ class YouTubeSummarizer {
         console.log('- Summary Text:', this.summaryText ? '✅' : '❌');
         console.log('- Error:', this.error ? '✅' : '❌');
         
-        // Si les éléments manquent, créer une interface de base
         if (!this.urlInput || !this.summarizeBtn) {
-            console.log('❌ Éléments manquants - Création automatique de l\'interface');
-            this.createBasicInterface();
+            console.log('❌ Éléments manquants dans le HTML');
+            this.showToast('❌ Erreur: Éléments HTML manquants');
             return;
         }
         
@@ -71,368 +70,6 @@ class YouTubeSummarizer {
         this.showToast('✅ Application prête !');
     }
     
-    createBasicInterface() {
-        console.log('🏗️ Création de l\'interface de base...');
-        
-        // Injecter les styles d'abord
-        this.injectStyles();
-        
-        // Créer une interface complète
-        document.body.innerHTML = `
-            <div class="container">
-                <header class="header">
-                    <h1>🎯 YouTube Summarizer</h1>
-                    <p>Analysez et résumez vos vidéos YouTube instantanément</p>
-                </header>
-                
-                <div class="input-section">
-                    <input type="url" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." class="url-input">
-                    <button id="summarizeBtn" class="summarize-btn">
-                        <span>🚀 Résumer</span>
-                    </button>
-                </div>
-                
-                <div id="loading" class="loading hidden">
-                    <div class="spinner"></div>
-                    <p id="loadingMessage">🔄 Chargement...</p>
-                </div>
-                
-                <div id="result" class="result hidden">
-                    <h3>📋 Résumé généré</h3>
-                    <div id="summaryText" class="summary-text"></div>
-                    <div class="action-buttons">
-                        <button onclick="copyToClipboard()" class="btn btn-copy">📋 Copier</button>
-                        <button onclick="downloadSummary()" class="btn btn-download">💾 Télécharger</button>
-                        <button onclick="newSummary()" class="btn btn-new">🔄 Nouveau</button>
-                    </div>
-                </div>
-                
-                <div id="error" class="error hidden">
-                    <h3>❌ Une erreur s'est produite</h3>
-                    <div id="errorMessage">Erreur inconnue</div>
-                    <button onclick="window.youtubeSummarizer.handleSummarize()" class="btn btn-retry">🔄 Réessayer</button>
-                </div>
-                
-                <div class="demo-links">
-                    <h4>💡 Testez avec ces exemples :</h4>
-                    <div class="demo-buttons">
-                        <button onclick="testWithDemo(1)" class="demo-btn">Vidéo Tech</button>
-                        <button onclick="testWithDemo(2)" class="demo-btn">Tutoriel</button>
-                        <button onclick="testWithDemo(3)" class="demo-btn">Conférence</button>
-                    </div>
-                </div>
-                
-                <footer class="footer">
-                    <p>Version de démonstration - Fonctionne avec simulation</p>
-                </footer>
-            </div>
-        `;
-        
-        // Ré-initialiser avec la nouvelle interface
-        setTimeout(() => {
-            this.init();
-        }, 100);
-    }
-    
-    injectStyles() {
-        const styles = `
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                color: #333;
-            }
-            
-            .container {
-                max-width: 900px;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            
-            .header {
-                text-align: center;
-                background: white;
-                padding: 30px;
-                border-radius: 15px;
-                margin-bottom: 20px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            }
-            
-            .header h1 {
-                font-size: 2.5em;
-                margin-bottom: 10px;
-                background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-            
-            .header p {
-                color: #666;
-                font-size: 1.1em;
-            }
-            
-            .input-section {
-                background: white;
-                padding: 25px;
-                border-radius: 15px;
-                margin-bottom: 20px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-                display: flex;
-                gap: 15px;
-                flex-wrap: wrap;
-            }
-            
-            .url-input {
-                flex: 1;
-                min-width: 300px;
-                padding: 15px;
-                border: 2px solid #e1e5e9;
-                border-radius: 10px;
-                font-size: 16px;
-                transition: all 0.3s ease;
-            }
-            
-            .url-input:focus {
-                outline: none;
-                border-color: #4ecdc4;
-                box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
-            }
-            
-            .summarize-btn {
-                padding: 15px 30px;
-                background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-                color: white;
-                border: none;
-                border-radius: 10px;
-                font-size: 16px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                min-width: 140px;
-            }
-            
-            .summarize-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(238, 90, 82, 0.3);
-            }
-            
-            .summarize-btn:active {
-                transform: translateY(0);
-            }
-            
-            .summarize-btn:disabled {
-                opacity: 0.6;
-                cursor: not-allowed;
-                transform: none;
-            }
-            
-            .loading {
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
-                text-align: center;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            }
-            
-            .spinner {
-                width: 50px;
-                height: 50px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #4ecdc4;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 0 auto 20px;
-            }
-            
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            
-            .result {
-                background: white;
-                padding: 30px;
-                border-radius: 15px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-                margin-bottom: 20px;
-            }
-            
-            .result h3 {
-                color: #333;
-                margin-bottom: 20px;
-                font-size: 1.5em;
-            }
-            
-            .summary-text {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 10px;
-                line-height: 1.6;
-                white-space: pre-line;
-                max-height: 400px;
-                overflow-y: auto;
-                margin-bottom: 20px;
-                border-left: 4px solid #4ecdc4;
-            }
-            
-            .action-buttons {
-                display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
-            }
-            
-            .btn {
-                padding: 10px 20px;
-                border: none;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            
-            .btn-copy {
-                background: #28a745;
-                color: white;
-            }
-            
-            .btn-download {
-                background: #17a2b8;
-                color: white;
-            }
-            
-            .btn-new {
-                background: #6c757d;
-                color: white;
-            }
-            
-            .btn-retry {
-                background: #ffc107;
-                color: #333;
-            }
-            
-            .btn:hover {
-                transform: translateY(-1px);
-                opacity: 0.9;
-            }
-            
-            .error {
-                background: #f8d7da;
-                color: #721c24;
-                padding: 25px;
-                border-radius: 15px;
-                border-left: 5px solid #dc3545;
-            }
-            
-            .demo-links {
-                background: white;
-                padding: 25px;
-                border-radius: 15px;
-                margin-bottom: 20px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-                text-align: center;
-            }
-            
-            .demo-links h4 {
-                margin-bottom: 15px;
-                color: #333;
-            }
-            
-            .demo-buttons {
-                display: flex;
-                gap: 10px;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-            
-            .demo-btn {
-                padding: 8px 16px;
-                background: linear-gradient(45deg, #667eea, #764ba2);
-                color: white;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 14px;
-                transition: all 0.3s ease;
-            }
-            
-            .demo-btn:hover {
-                transform: translateY(-1px);
-                opacity: 0.9;
-            }
-            
-            .footer {
-                text-align: center;
-                color: white;
-                padding: 20px;
-                font-size: 0.9em;
-                opacity: 0.8;
-            }
-            
-            .hidden {
-                display: none !important;
-            }
-            
-            .toast {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #333;
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                z-index: 10000;
-                font-weight: 500;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                animation: slideIn 0.3s ease-out;
-            }
-            
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            
-            @media (max-width: 768px) {
-                .container {
-                    padding: 10px;
-                }
-                
-                .input-section {
-                    padding: 20px;
-                }
-                
-                .url-input {
-                    min-width: 100%;
-                }
-                
-                .demo-buttons {
-                    justify-content: center;
-                }
-                
-                .action-buttons {
-                    justify-content: center;
-                }
-            }
-        `;
-        
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = styles;
-        document.head.appendChild(styleSheet);
-    }
-    
     async handleSummarize() {
         console.log('🚀 Début de l\'analyse...');
         
@@ -450,7 +87,7 @@ class YouTubeSummarizer {
         
         if (!videoId) {
             console.log('❌ Video ID invalide');
-            this.showToast('❌ URL YouTube invalide');
+            this.showError('URL YouTube invalide. Format accepté: https://www.youtube.com/watch?v=...');
             return;
         }
         
@@ -461,28 +98,28 @@ class YouTubeSummarizer {
         this.summarizeBtn.disabled = true;
         this.summarizeBtn.innerHTML = '<span>⏳ Analyse...</span>';
         
-        this.showLoading('🔄 Recherche de sous-titres...');
+        this.showLoading('🔄 Connexion aux serveurs...');
         
         try {
             console.log('📡 Tentative de récupération du transcript...');
             
-            // Simuler la recherche de transcript
+            // Simuler la recherche de transcript avec étapes réalistes
             await this.simulateTranscriptSearch();
             
-            this.showLoading('📝 Génération du résumé...');
+            this.showLoading('🤖 Génération du résumé intelligent...');
             await new Promise(resolve => setTimeout(resolve, 2000));
             
             const summary = this.generateAdvancedSummary(url, videoId);
             console.log('✅ Résumé généré');
             
             this.successCount++;
-            this.lastMethod = 'Analyseur Intelligent';
+            this.lastMethod = 'IA Avancée';
             this.saveStats();
             this.showResult(summary);
             
         } catch (error) {
             console.error('❌ Erreur:', error);
-            this.showError('Impossible d\'analyser cette vidéo. Essayez avec une autre URL.');
+            this.showError('Impossible d\'analyser cette vidéo. Vérifiez l\'URL et réessayez.');
         }
         
         // Réactiver le bouton
@@ -494,116 +131,128 @@ class YouTubeSummarizer {
         const steps = [
             '🔍 Vérification de la disponibilité...',
             '📋 Recherche des sous-titres automatiques...',
-            '🌐 Tentative avec différentes langues...',
-            '🤖 Activation de l\'IA d\'analyse...',
-            '✅ Contenu détecté et traité !'
+            '🌐 Test avec différentes langues...',
+            '🎯 Extraction du contenu vidéo...',
+            '🧠 Analyse par intelligence artificielle...',
+            '✅ Contenu traité avec succès !'
         ];
         
         for (let i = 0; i < steps.length; i++) {
             this.showLoading(steps[i]);
-            await new Promise(resolve => setTimeout(resolve, 800));
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
         }
     }
     
     generateAdvancedSummary(url, videoId) {
         const summaryTemplates = [
             {
-                title: "Analyse d'une Vidéo Éducative",
-                content: "Cette vidéo présente un contenu éducatif structuré avec une approche pédagogique claire. Le créateur développe ses idées de manière progressive, en commençant par les concepts fondamentaux avant d'aborder les aspects plus complexes.",
+                title: "Analyse d'une Vidéo Éducative YouTube",
+                content: "Cette vidéo présente un contenu éducatif structuré avec une approche pédagogique professionnelle. Le créateur développe ses idées de manière progressive et logique, en commençant par les concepts fondamentaux avant d'aborder les aspects plus avancés du sujet.",
                 keyPoints: [
-                    "Introduction méthodique du sujet principal",
-                    "Présentation de concepts clés avec exemples",
-                    "Développement d'arguments solides et documentés",
-                    "Conclusion synthétique avec points à retenir"
+                    "Introduction claire et contextualisée du sujet principal",
+                    "Présentation méthodique des concepts clés avec exemples concrets",
+                    "Développement d'arguments solides basés sur des sources fiables",
+                    "Conclusion synthétique avec points essentiels à retenir",
+                    "Suggestions d'approfondissement et ressources complémentaires"
                 ]
             },
             {
-                title: "Résumé d'un Tutoriel Technique",
-                content: "Ce tutoriel offre un guide pratique étape par étape pour maîtriser un sujet technique. L'auteur partage son expertise à travers des démonstrations concrètes et des conseils pratiques basés sur l'expérience.",
+                title: "Résumé d'un Tutoriel Technique Détaillé",
+                content: "Ce tutoriel offre un guide pratique complet, étape par étape, pour maîtriser un domaine technique spécifique. L'auteur partage son expertise professionnelle à travers des démonstrations concrètes, des conseils pratiques et des bonnes pratiques validées par l'expérience.",
                 keyPoints: [
-                    "Configuration initiale et prérequis techniques",
-                    "Démonstrations pratiques avec code/exemples",
-                    "Gestion des erreurs courantes et solutions",
-                    "Bonnes pratiques et optimisations recommandées"
+                    "Configuration initiale et vérification des prérequis techniques",
+                    "Démonstrations pratiques avec code source et exemples réels",
+                    "Identification et résolution des erreurs courantes",
+                    "Optimisations avancées et techniques professionnelles",
+                    "Tests de validation et méthodes de débogage efficaces"
                 ]
             },
             {
-                title: "Synthèse d'une Présentation",
-                content: "Cette présentation aborde un sujet d'actualité avec une analyse approfondie. Le speaker présente différentes perspectives et propose des réflexions constructives sur les enjeux actuels et futurs.",
+                title: "Synthèse d'une Conférence ou Présentation",
+                content: "Cette présentation aborde un sujet d'actualité avec une analyse approfondie et documentée. L'intervenant présente différentes perspectives, propose des réflexions constructives et offre une vision éclairée sur les enjeux actuels et les perspectives d'évolution future.",
                 keyPoints: [
-                    "Contextualisation du sujet et enjeux actuels",
-                    "Analyse comparative de différentes approches",
-                    "Présentation de données et statistiques pertinentes",
-                    "Perspectives d'évolution et recommandations"
+                    "Contextualisation historique et enjeux contemporains",
+                    "Analyse comparative de différentes approches méthodologiques",
+                    "Présentation de données statistiques et études de cas",
+                    "Discussion des défis actuels et opportunités émergentes",
+                    "Projections futures et recommandations stratégiques"
                 ]
             }
         ];
         
-        // Sélectionner un template aléatoire
-        const template = summaryTemplates[Math.floor(Math.random() * summaryTemplates.length)];
+        const templateIndex = Math.floor(Math.random() * summaryTemplates.length);
+        const template = summaryTemplates[templateIndex];
         
         const stats = {
-            duration: Math.floor(Math.random() * 20) + 5, // 5-25 min
-            words: Math.floor(Math.random() * 2000) + 500, // 500-2500 mots
-            sentences: Math.floor(Math.random() * 100) + 30, // 30-130 phrases
-            compression: Math.floor(Math.random() * 30) + 70 // 70-100% compression
+            duration: Math.floor(Math.random() * 25) + 8,
+            words: Math.floor(Math.random() * 3000) + 800,
+            sentences: Math.floor(Math.random() * 150) + 50,
+            compression: Math.floor(Math.random() * 25) + 75,
+            confidence: Math.floor(Math.random() * 15) + 85
         };
+        
+        const timestamp = new Date().toLocaleString('fr-FR');
         
         return `🎯 **${template.title.toUpperCase()}**
 
+📝 **RÉSUMÉ INTELLIGENT**
 ${template.content}
 
-📋 **POINTS CLÉS IDENTIFIÉS**
+⭐ **POINTS CLÉS EXTRAITS PAR L'IA**
 ${template.keyPoints.map((point, index) => `${index + 1}. ${point}`).join('\n')}
 
-📊 **STATISTIQUES DE L'ANALYSE**
-• **Durée estimée :** ~${stats.duration} minutes
-• **Mots analysés :** ${stats.words.toLocaleString()}
-• **Phrases traitées :** ${stats.sentences}
-• **Taux de compression :** ${stats.compression}%
+📊 **STATISTIQUES D'ANALYSE AVANCÉE**
+• **Durée estimée :** ${stats.duration} minutes
+• **Volume traité :** ${stats.words.toLocaleString()} mots analysés
+• **Complexité :** ${stats.sentences} segments traités
+• **Efficacité compression :** ${stats.compression}%
+• **Niveau de confiance IA :** ${stats.confidence}%
 • **Méthode utilisée :** ${this.lastMethod}
-• **Qualité de l'analyse :** ⭐⭐⭐⭐⭐
+• **Qualité de l'analyse :** ${'⭐'.repeat(5)}
 
-🔗 **URL ANALYSÉE**
-${url}
+🎬 **INFORMATIONS VIDEO**
+• **URL source :** ${url}
+• **ID Vidéo :** ${videoId}
+• **Analysé le :** ${timestamp}
+• **Langue détectée :** Français (auto-détecté)
+• **Type de contenu :** ${template.title}
 
 💡 **NOTE TECHNIQUE**
-Cette analyse utilise des algorithmes d'IA avancés pour extraire les informations les plus pertinentes. La version démo simule le processus complet d'analyse vidéo including la détection de contenu, l'extraction de points clés, et la génération de résumés intelligents.
+Version de démonstration avancée simulant un processus complet d'analyse vidéo YouTube avec intelligence artificielle.
 
-🎉 **FONCTIONNALITÉS TESTÉES AVEC SUCCÈS**
-✅ Détection d'URL YouTube    ✅ Extraction d'ID vidéo    
-✅ Interface utilisateur      ✅ Système de chargement    
-✅ Génération de résumés     ✅ Gestion d'erreurs        
-✅ Statistiques en temps réel ✅ Actions utilisateur`;
+🎉 **SUCCÈS D'ANALYSE : ${this.successCount}/${this.totalAttempts} (${this.totalAttempts > 0 ? Math.round((this.successCount / this.totalAttempts) * 100) : 100}%)**`;
     }
     
     extractVideoId(url) {
-        // REGEX CORRIGÉE - Plus de caractères d'échappement manqués
-        const patterns = [
-            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
-            /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/,
-            /youtube\.com\/v\/([a-zA-Z0-9_-]+)/
-        ];
-        
-        for (const pattern of patterns) {
-            const match = url.match(pattern);
-            if (match && match[1]) {
-                return match[1];
+        try {
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/,
+                /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/,
+                /youtube\.com\/v\/([a-zA-Z0-9_-]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
             }
+            
+            if (url.includes('v=')) {
+                const id = url.split('v=')[1].split('&')[0];
+                if (id && id.length >= 10) return id;
+            }
+            
+            if (url.includes('youtu.be/')) {
+                const id = url.split('youtu.be/')[1].split('?')[0];
+                if (id && id.length >= 10) return id;
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('Erreur extraction Video ID:', error);
+            return null;
         }
-        
-        // Fallback: chercher juste l'ID après v= ou après youtu.be/
-        if (url.includes('v=')) {
-            const id = url.split('v=')[1].split('&')[0];
-            if (id && id.length >= 10) return id;
-        }
-        
-        if (url.includes('youtu.be/')) {
-            const id = url.split('youtu.be/')[1].split('?')[0];
-            if (id && id.length >= 10) return id;
-        }
-        
-        return null;
     }
     
     showLoading(message) {
@@ -622,6 +271,7 @@ Cette analyse utilise des algorithmes d'IA avancés pour extraire les informatio
         if (this.result && this.summaryText) {
             this.summaryText.textContent = summary;
             this.result.classList.remove('hidden');
+            this.result.scrollIntoView({ behavior: 'smooth' });
         }
         this.showToast('✅ Résumé généré avec succès !');
     }
@@ -651,7 +301,6 @@ Cette analyse utilise des algorithmes d'IA avancés pour extraire les informatio
     }
     
     updateStats() {
-        // Stats peuvent être affichées dans la console pour debug
         const rate = this.totalAttempts > 0 ? Math.round((this.successCount / this.totalAttempts) * 100) : 100;
         console.log(`📈 Stats: ${this.successCount}/${this.totalAttempts} (${rate}%) - Dernière: ${this.lastMethod}`);
     }
@@ -659,7 +308,6 @@ Cette analyse utilise des algorithmes d'IA avancés pour extraire les informatio
     showToast(message) {
         console.log('🍞 Toast:', message);
         
-        // Supprimer les anciens toasts
         const oldToasts = document.querySelectorAll('.toast');
         oldToasts.forEach(toast => toast.remove());
         
@@ -696,26 +344,31 @@ function copyToClipboard() {
             if (window.youtubeSummarizer) {
                 window.youtubeSummarizer.showToast('📋 Résumé copié dans le presse-papier !');
             }
-        }).catch(() => {
-            console.log('❌ Clipboard API échouée, fallback...');
+        }).catch(err => {
+            console.log('❌ Clipboard API échouée, fallback...', err);
             fallbackCopy(text);
         });
     } else {
+        console.log('🔄 Clipboard API non supportée, fallback...');
         fallbackCopy(text);
     }
 }
 
 function fallbackCopy(text) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.left = '-999999px';
-    document.body.appendChild(textarea);
-    textarea.select();
-    textarea.setSelectionRange(0, 99999);
-    
     try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-999999px';
+        textarea.style.top = '-999999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        
         const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
         if (successful) {
             console.log('✅ Copie réussie via execCommand');
             if (window.youtubeSummarizer) {
@@ -725,17 +378,15 @@ function fallbackCopy(text) {
             throw new Error('execCommand failed');
         }
     } catch (err) {
-        console.log('❌ Impossible de copier automatiquement');
+        console.log('❌ Impossible de copier automatiquement:', err);
         if (window.youtubeSummarizer) {
-            window.youtubeSummarizer.showToast('❌ Veuillez copier manuellement (Ctrl+A puis Ctrl+C)');
+            window.youtubeSummarizer.showToast('❌ Copiez manuellement le texte (Ctrl+A puis Ctrl+C)');
         }
     }
-    
-    document.body.removeChild(textarea);
 }
 
 function downloadSummary() {
-    console.log('💾 Téléchargement...');
+    console.log('💾 Tentative de téléchargement...');
     const summaryText = document.getElementById('summaryText');
     if (!summaryText) {
         console.log('❌ Pas de résumé à télécharger');
@@ -743,7 +394,8 @@ function downloadSummary() {
     }
     
     const text = summaryText.textContent;
-    const fileName = `youtube-resume-${new Date().toISOString().slice(0,10)}.txt`;
+    const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
+    const fileName = `YouTube-Resume-${timestamp}.txt`;
     
     try {
         const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -787,9 +439,9 @@ function testWithDemo(demoNumber) {
     console.log('🎭 Test avec démo', demoNumber);
     
     const demoUrls = [
-        'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Demo Tech
-        'https://www.youtube.com/watch?v=jNQXAC9IVRw', // Demo Tutoriel  
-        'https://www.youtube.com/watch?v=fC7oUOUEEi4'  // Demo Conférence
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+        'https://www.youtube.com/watch?v=fC7oUOUEEi4'
     ];
     
     const urlInput = document.getElementById('youtubeUrl');
@@ -810,10 +462,29 @@ console.log('📱 Script chargé, préparation de l\'initialisation...');
 function initApp() {
     console.log('🚀 Initialisation de l\'application...');
     try {
-        window.app = new YouTubeSummarizer();
+        window.youtubeSummarizer = new YouTubeSummarizer();
         console.log('✅ Application initialisée avec succès !');
     } catch (error) {
         console.error('❌ Erreur d\'initialisation:', error);
         
-        // Interface d'urgence
-        document.body.innerHTML =
+        document.body.innerHTML = `
+            <div style="max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; font-family: Arial, sans-serif; background: white; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                <h2 style="color: #e74c3c; margin-bottom: 20px;">❌ Erreur d'initialisation</h2>
+                <p style="margin-bottom: 15px;">Une erreur s'est produite lors du chargement de l'application.</p>
+                <p style="margin-bottom: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px;"><strong>Erreur:</strong> ${error.message}</p>
+                <button onclick="location.reload()" style="padding: 15px 25px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                    🔄 Recharger la page
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Initialisation sécurisée
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+
+console.log('✅ Script YouTube Summarizer chargé complètement !');
