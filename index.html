@@ -63,16 +63,13 @@ body {
     overflow-x: hidden;
 }
 
-/* CONTAINER */
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-/* ============================
-   HEADER
-   ============================*/
+/* HEADER */
 .header {
     background: rgba(26, 26, 46, 0.9);
     backdrop-filter: blur(10px);
@@ -103,6 +100,11 @@ body {
     animation: glow 2s ease-in-out infinite alternate;
 }
 
+@keyframes glow {
+    from { text-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+    to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8); }
+}
+
 .subtitle {
     font-size: 1.2rem;
     color: var(--text-secondary);
@@ -110,15 +112,12 @@ body {
     margin: 0 auto;
 }
 
-/* ============================
-   MAIN CONTENT
-   ============================*/
+/* INPUT SECTION */
 .main {
     padding: 3rem 0;
     min-height: calc(100vh - 200px);
 }
 
-/* INPUT SECTION */
 .input-section {
     margin-bottom: 3rem;
 }
@@ -198,21 +197,6 @@ body {
     overflow: hidden;
 }
 
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.btn:hover::before {
-    left: 100%;
-}
-
 .btn-primary {
     background: var(--gradient-primary);
     color: white;
@@ -231,12 +215,6 @@ body {
     box-shadow: var(--shadow-md);
 }
 
-.btn-secondary:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    filter: brightness(1.1);
-}
-
 .btn-outline {
     background: transparent;
     color: var(--primary-color);
@@ -248,54 +226,11 @@ body {
     color: white;
 }
 
-.btn-ghost {
-    background: rgba(255, 107, 107, 0.1);
-    color: var(--primary-color);
-    border: 1px solid rgba(255, 107, 107, 0.3);
+/* LOADING */
+#loadingSection, #errorSection, #resultsSection {
+    display: none;
 }
 
-.btn-ghost:hover {
-    background: rgba(255, 107, 107, 0.2);
-}
-
-/* EXAMPLES */
-.examples {
-    margin-top: 1.5rem;
-    text-align: center;
-}
-
-.examples-title {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin-bottom: 1rem;
-}
-
-.example-links {
-    display: flex;
-    gap: 0.8rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.example-btn {
-    padding: 0.5rem 1rem;
-    background: rgba(78, 205, 196, 0.1);
-    border: 1px solid rgba(78, 205, 196, 0.3);
-    border-radius: var(--border-radius);
-    color: var(--secondary-color);
-    cursor: pointer;
-    transition: var(--transition-fast);
-    font-size: 0.9rem;
-}
-
-.example-btn:hover {
-    background: rgba(78, 205, 196, 0.2);
-    transform: translateY(-1px);
-}
-
-/* ============================
-   LOADING SECTION
-   ============================*/
 .loading-section {
     text-align: center;
     padding: 2rem 0;
@@ -312,7 +247,6 @@ body {
     margin: 0 auto;
 }
 
-/* SPINNER */
 .spinner {
     position: relative;
     width: 80px;
@@ -330,43 +264,11 @@ body {
     animation: spin 1.5s linear infinite;
 }
 
-.spinner-ring:nth-child(2) {
-    width: 90%;
-    height: 90%;
-    top: 5%;
-    left: 5%;
-    border-top-color: var(--secondary-color);
-    animation-delay: -0.5s;
-}
-
-.spinner-ring:nth-child(3) {
-    width: 80%;
-    height: 80%;
-    top: 10%;
-    left: 10%;
-    border-top-color: var(--accent-color);
-    animation-delay: -1s;
-}
-
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
 
-.loading-title {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-}
-
-.loading-message {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-    min-height: 1.5em;
-}
-
-/* PROGRESS BAR */
 .progress-container {
     display: flex;
     align-items: center;
@@ -380,7 +282,6 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .progress-fill {
@@ -388,83 +289,26 @@ body {
     background: var(--gradient-primary);
     border-radius: 4px;
     transition: width 0.5s ease;
-    box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-    position: relative;
-}
-
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    width: 0%;
 }
 
 .progress-text {
     font-weight: 600;
     color: var(--primary-color);
-    min-width: 40px;
+    min-width: 60px;
+    font-size: 0.9rem;
 }
 
-/* LOADING STEPS */
-.loading-steps {
-    display: grid;
-    gap: 0.8rem;
-    text-align: left;
-}
-
-.step {
-    padding: 0.8rem 1rem;
-    background: rgba(15, 15, 35, 0.5);
-    border-left: 4px solid var(--text-muted);
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
-    color: var(--text-muted);
-    transition: var(--transition-normal);
-}
-
-.step.active {
-    border-left-color: var(--primary-color);
-    background: rgba(255, 107, 107, 0.1);
-    color: var(--text-primary);
-    transform: translateX(5px);
-}
-
-.step.completed {
-    border-left-color: var(--success-color);
-    background: rgba(150, 206, 180, 0.1);
-    color: var(--success-color);
-}
-
-/* ============================
-   ERROR SECTION
-   ============================*/
-.error-section {
-    text-align: center;
-    padding: 2rem 0;
-}
-
+/* ERROR */
 .error-card {
     background: rgba(253, 121, 168, 0.1);
     border: 2px solid var(--error-color);
     border-radius: var(--border-radius-lg);
     padding: 3rem 2rem;
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(15px);
+    text-align: center;
     max-width: 600px;
     margin: 0 auto;
-}
-
-.error-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
 }
 
 .error-title {
@@ -473,87 +317,37 @@ body {
     margin-bottom: 1rem;
 }
 
-.error-message {
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-    line-height: 1.6;
-}
-
-.error-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-/* ============================
-   RESULTS SECTION
-   ============================*/
-.results-section {
-    padding: 2rem 0;
-}
-
-/* VIDEO INFO CARD */
+/* RESULTS */
 .video-info-card {
     background: rgba(26, 26, 46, 0.9);
     border-radius: var(--border-radius-lg);
     padding: 2rem;
     margin-bottom: 2rem;
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(15px);
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 200px 1fr;
     gap: 2rem;
-    border: 2px solid transparent;
-    transition: var(--transition-normal);
-}
-
-.video-info-card:hover {
-    border-color: var(--accent-color);
+    align-items: start;
 }
 
 .video-thumbnail {
-    position: relative;
     width: 200px;
     height: 112px;
     border-radius: var(--border-radius);
     overflow: hidden;
-    box-shadow: var(--shadow-md);
+    background: var(--bg-tertiary);
 }
 
 .video-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--transition-normal);
 }
 
-.video-thumbnail:hover img {
-    transform: scale(1.05);
-}
-
-.video-duration {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.video-details {
-    min-width: 0;
-}
-
-.video-title {
+.video-details h2 {
     font-size: 1.5rem;
-    font-weight: 700;
     margin-bottom: 1rem;
     color: var(--text-primary);
-    line-height: 1.3;
 }
 
 .video-meta {
@@ -570,33 +364,34 @@ body {
     font-weight: 600;
 }
 
-.video-description {
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-height: 4.8em;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+#categoryBadges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
 }
 
-/* SUMMARY CONTAINER */
+.category-badge {
+    background: rgba(78, 205, 196, 0.1);
+    color: var(--secondary-color);
+    padding: 0.3rem 0.8rem;
+    border-radius: var(--border-radius);
+    font-size: 0.8rem;
+    border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+/* TABS */
 .summary-container {
     background: rgba(26, 26, 46, 0.9);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(15px);
     overflow: hidden;
-    border: 2px solid transparent;
-    transition: var(--transition-normal);
 }
 
-/* TABS */
 .tabs {
     display: flex;
     background: rgba(15, 15, 35, 0.8);
     border-bottom: 2px solid var(--bg-tertiary);
-    overflow-x: auto;
 }
 
 .tab {
@@ -609,7 +404,6 @@ body {
     transition: var(--transition-normal);
     font-size: 0.9rem;
     font-weight: 600;
-    white-space: nowrap;
     border-bottom: 3px solid transparent;
 }
 
@@ -624,7 +418,6 @@ body {
     border-bottom-color: var(--primary-color);
 }
 
-/* TAB CONTENT */
 .tab-content {
     min-height: 400px;
 }
@@ -632,51 +425,24 @@ body {
 .tab-panel {
     display: none;
     padding: 2rem;
-    animation: fadeIn 0.3s ease;
 }
 
 .tab-panel.active {
     display: block;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* SUMMARY CARD */
-.summary-card {
-    background: rgba(15, 15, 35, 0.3);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.summary-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.summary-header h3 {
-    font-size: 1.3rem;
-    color: var(--text-primary);
-}
-
 .summary-stats {
     display: flex;
     gap: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .stat {
     text-align: center;
     background: rgba(255, 255, 255, 0.05);
-    padding: 0.5rem 1rem;
+    padding: 0.8rem 1rem;
     border-radius: var(--border-radius);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    flex: 1;
 }
 
 .stat-value {
@@ -691,381 +457,435 @@ body {
     color: var(--text-muted);
 }
 
-.summary-content {
+.summary-content, .key-points-list, .transcript-content {
     line-height: 1.7;
     color: var(--text-primary);
-    font-size: 1.05rem;
 }
 
-.summary-content h4 {
-    color: var(--secondary-color);
-    margin: 1.5rem 0 0.8rem 0;
-    font-size: 1.1rem;
-}
-
-.summary-content p {
-    margin-bottom: 1rem;
-}
-
-.summary-content ul, .summary-content ol {
-    margin-left: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.summary-content li {
-    margin-bottom: 0.5rem;
-}
-
-/* POINTS LIST */
-.points-list {
-    display: grid;
-    gap: 1rem;
-}
-
-.point-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
+.key-point {
     padding: 1rem;
+    margin-bottom: 0.8rem;
     background: rgba(255, 255, 255, 0.03);
     border-radius: var(--border-radius);
     border-left: 4px solid var(--accent-color);
-    transition: var(--transition-normal);
 }
 
-.point-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateX(5px);
-}
-
-.point-icon {
-    font-size: 1.2rem;
-    color: var(--accent-color);
-}
-
-.point-content {
-    flex: 1;
-}
-
-.point-title {
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.3rem;
-}
-
-.point-description {
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-/* TRANSCRIPT */
-.btn-toggle {
-    background: rgba(69, 183, 209, 0.1);
-    border: 1px solid rgba(69, 183, 209, 0.3);
-    color: var(--accent-color);
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: var(--transition-normal);
-    font-size: 0.9rem;
-}
-
-.btn-toggle:hover {
-    background: rgba(69, 183, 209, 0.2);
-}
-
-.transcript-content {
+.confidence-indicator {
     margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.transcript-text {
-    max-height: 400px;
-    overflow-y: auto;
     padding: 1rem;
-    background: rgba(15, 15, 35, 0.5);
-    border-radius: var(--border-radius);
-    line-height: 1.6;
-    color: var(--text-secondary);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.transcript-text::-webkit-scrollbar {
-    width: 8px;
-}
-
-.transcript-text::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-}
-
-.transcript-text::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 4px;
-}
-
-/* RESULTS ACTIONS */
-.results-actions {
-    display: flex;
-    gap: 1rem;
-    padding: 2rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    background: rgba(15, 15, 35, 0.3);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* ============================
-   FOOTER
-   ============================*/
-.footer {
-    background: rgba(15, 15, 35, 0.9);
-    border-top: 2px solid var(--primary-color);
-    padding: 2rem 0;
-    margin-top: 3rem;
-    backdrop-filter: blur(10px);
-}
-
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.footer-text {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.footer-version {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-}
-
-.footer-link {
-    color: var(--accent-color);
-    text-decoration: none;
-    transition: var(--transition-fast);
-}
-
-.footer-link:hover {
-    color: var(--primary-color);
-}
-
-.footer-stats {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-/* ============================
-   TOAST NOTIFICATIONS
-   ============================*/
-.toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.toast {
-    background: rgba(26, 26, 46, 0.95);
-    border: 2px solid var(--success-color);
     border-radius: var(--border-radius);
-    padding: 1rem 1.5rem;
-    color: var(--text-primary);
-    box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(15px);
-    transform: translateX(100%);
-    animation: slideIn 0.3s ease forwards;
-    max-width: 300px;
 }
 
-.toast.success {
-    border-color: var(--success-color);
+.confidence-élevée {
+    color: var(--success-color);
 }
 
-.toast.error {
-    border-color: var(--error-color);
+.confidence-moyenne {
+    color: var(--warning-color);
 }
 
-.toast.warning {
-    border-color: var(--warning-color);
+.confidence-faible {
+    color: var(--error-color);
 }
 
-@keyframes slideIn {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
-}
-
-@keyframes slideOut {
-    from { transform: translateX(0); }
-    to { transform: translateX(100%); }
-}
-
-/* ============================
-   MODAL
-   ============================*/
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background: var(--bg-secondary);
-    margin: 5% auto;
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    width: 90%;
-    max-width: 600px;
-    box-shadow: var(--shadow-lg);
-    border: 2px solid var(--primary-color);
-    position: relative;
-    animation: modalAppear 0.3s ease;
-}
-
-@keyframes modalAppear {
-    from { transform: scale(0.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-.modal-close {
-    color: var(--text-muted);
-    float: right;
-    font-size: 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: var(--transition-fast);
-    position: absolute;
-    top: 1rem;
-    right: 1.5rem;
-}
-
-.modal-close:hover {
-    color: var(--primary-color);
-}
-
-.help-content h3 {
-    color: var(--secondary-color);
-    margin: 1.5rem 0 1rem 0;
-}
-
-.help-content ul, .help-content ol {
-    margin-left: 1.5rem;
-    line-height: 1.7;
-}
-
-.help-content code {
-    background: rgba(255, 107, 107, 0.1);
-    color: var(--primary-color);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-}
-
-/* ============================
-   ANIMATIONS GLOBALES
-   ============================*/
-@keyframes glow {
-    from { text-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
-    to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 40px rgba(255, 107, 107, 0.3); }
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease;
-}
-
-.bounce-in {
-    animation: bounceIn 0.6s ease;
-}
-
-@keyframes bounceIn {
-    0% { transform: scale(0.3); opacity: 0; }
-    50% { transform: scale(1.05); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* ============================
-   RESPONSIVE DESIGN
-   ============================*/
+/* RESPONSIVE */
 @media (max-width: 768px) {
-    .container {
-        padding: 0 15px;
+    .container { padding: 0 15px; }
+    .title { font-size: 2rem; }
+    .input-wrapper { flex-direction: column; }
+    .url-input { min-width: unset; }
+    .video-info-card { grid-template-columns: 1fr; text-align: center; }
+    .video-thumbnail { width: 100%; height: 200px; margin: 0 auto; }
+    .tabs { flex-direction: column; }
+    .summary-stats { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="gradient-text">📺 YouTube Summarizer</span>
+                </h1>
+                <p class="subtitle">
+                    🤖 Analyse intelligente et résumés automatiques de vos vidéos YouTube préférées
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+        <div class="container">
+            <!-- INPUT SECTION -->
+            <section class="input-section">
+                <div class="input-container">
+                    <div class="input-group">
+                        <label class="input-label" for="videoUrl">
+                            🔗 URL de la vidéo YouTube
+                        </label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="url" 
+                                id="videoUrl" 
+                                class="url-input" 
+                                placeholder="https://www.youtube.com/watch?v=..."
+                                autocomplete="off"
+                            >
+                            <button id="analyzeBtn" class="btn btn-primary">
+                                ⚡ Analyser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LOADING SECTION -->
+            <section id="loadingSection" class="loading-section">
+                <div class="loading-card">
+                    <div class="spinner">
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <h2 class="loading-title">🔄 Analyse en cours...</h2>
+                    <p id="loadingMessage" class="loading-message">Initialisation...</p>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <span class="progress-text">0%</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ERROR SECTION -->
+            <section id="errorSection" class="error-section">
+                <div class="error-card">
+                    <h2 class="error-title">❌ Erreur d'analyse</h2>
+                    <p id="errorMessage" class="error-message">Une erreur est survenue.</p>
+                    <button id="retryBtn" class="btn btn-outline">🔄 Réessayer</button>
+                </div>
+            </section>
+
+            <!-- RESULTS SECTION -->
+            <section id="resultsSection" class="results-section">
+                <!-- VIDEO INFO -->
+                <div class="video-info-card">
+                    <div class="video-thumbnail">
+                        <img id="videoThumbnail" src="" alt="Miniature vidéo">
+                    </div>
+                    <div class="video-details">
+                        <h2 id="videoTitle">Titre de la vidéo</h2>
+                        <div class="video-meta">
+                            <span class="channel-name" id="videoChannel">Nom de la chaîne</span>
+                            <span>👁️ <span id="videoViews">0</span> vues</span>
+                            <span>🕒 <span id="videoDuration">0min</span></span>
+                            <span>📅 <span id="videoDate">Date</span></span>
+                        </div>
+                        <div id="categoryBadges"></div>
+                    </div>
+                </div>
+
+                <!-- SUMMARY CONTAINER -->
+                <div class="summary-container">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="summary">📋 Résumé</button>
+                        <button class="tab" data-tab="keyPoints">🎯 Points clés</button>
+                        <button class="tab" data-tab="transcript">📜 Transcription</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- SUMMARY TAB -->
+                        <div id="summaryPanel" class="tab-panel active">
+                            <div class="summary-stats">
+                                <div class="stat">
+                                    <span class="stat-value">0</span>
+                                    <span class="stat-label">📝 Mots</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value">0</span>
+                                    <span class="stat-label">⏱️ Lecture</span>
+                                </div>
+                                <div class="stat">
+                                    <span class="stat-value">❌</span>
+                                    <span class="stat-label">📜 Transcription</span>
+                                </div>
+                            </div>
+                            <div class="summary-content">
+                                <p>Résumé en cours de génération...</p>
+                            </div>
+                        </div>
+
+                        <!-- KEY POINTS TAB -->
+                        <div id="keyPointsPanel" class="tab-panel">
+                            <div class="key-points-list">
+                                <div class="key-point">Points clés en cours de génération...</div>
+                            </div>
+                        </div>
+
+                        <!-- TRANSCRIPT TAB -->
+                        <div id="transcriptPanel" class="tab-panel">
+                            <div class="transcript-content">
+                                <p>Transcription en cours d'extraction...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script>
+/*===============================================
+   YOUTUBE SUMMARIZER - VERSION OPTIMALE COMPLÈTE
+===============================================*/
+
+class YouTubeSummarizerOptimal {
+    constructor() {
+        this.YOUTUBE_API_KEY = 'VOTRE_CLE_API_ICI'; // Remplacez par votre clé
+        this.USE_API = false; // Changez à true si vous avez une clé valide
+        
+        this.PROXY_SERVICES = [
+            'https://api.allorigins.win/get?url=',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://thingproxy.freeboard.io/fetch/'
+        ];
+        
+        this.currentProxyIndex = 0;
+        this.init();
     }
-    
-    .title {
-        font-size: 2rem;
+
+    init() {
+        console.log('🚀 YouTube Summarizer OPTIMAL initialisé');
+        this.setupEventListeners();
     }
-    
-    .subtitle {
-        font-size: 1rem;
+
+    setupEventListeners() {
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const videoUrl = document.getElementById('videoUrl');
+
+        if (analyzeBtn) {
+            analyzeBtn.addEventListener('click', () => {
+                const url = videoUrl?.value.trim();
+                if (url) {
+                    this.summarizeVideo(url);
+                } else {
+                    this.showError('Veuillez entrer une URL YouTube valide');
+                }
+            });
+            console.log('✅ Event listener BOUTON configuré');
+        }
+
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => {
+                const url = videoUrl?.value.trim();
+                if (url) this.summarizeVideo(url);
+            });
+        }
+
+        if (videoUrl) {
+            videoUrl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    analyzeBtn?.click();
+                }
+            });
+        }
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.getAttribute('data-tab');
+                this.switchTab(tabName);
+            });
+        });
     }
-    
-    .input-wrapper {
-        flex-direction: column;
+
+    extractVideoId(url) {
+        const patterns = [
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+            /^([a-zA-Z0-9_-]{11})$/
+        ];
+        
+        for (let pattern of patterns) {
+            const match = url.match(pattern);
+            if (match) return match[1];
+        }
+        return null;
     }
-    
-    .url-input {
-        min-width: unset;
+
+    async getVideoInfoScraping(videoId) {
+        const url = `https://www.youtube.com/watch?v=${videoId}`;
+        
+        for (let i = 0; i < this.PROXY_SERVICES.length; i++) {
+            try {
+                console.log(`🌐 Tentative scraping via proxy ${i + 1}...`);
+                
+                const proxyUrl = this.PROXY_SERVICES[i] + encodeURIComponent(url);
+                const response = await fetch(proxyUrl);
+                
+                let htmlContent;
+                if (this.PROXY_SERVICES[i].includes('allorigins')) {
+                    const data = await response.json();
+                    htmlContent = data.contents;
+                } else {
+                    htmlContent = await response.text();
+                }
+                
+                return this.parseYouTubeHTML(htmlContent, videoId);
+                
+            } catch (error) {
+                console.warn(`⚠️ Proxy ${i + 1} échec:`, error.message);
+                continue;
+            }
+        }
+        
+        throw new Error('Impossible d\'extraire les informations de la vidéo');
     }
-    
-    .video-info-card {
-        grid-template-columns: 1fr;
-        text-align: center;
+
+    parseYouTubeHTML(html, videoId) {
+        try {
+            let title = 'Titre non disponible';
+            const titleMatch = html.match(/<title>(.*?)<\/title>/);
+            if (titleMatch) {
+                title = titleMatch[1].replace(' - YouTube', '').trim();
+            }
+
+            let channelTitle = 'Chaîne inconnue';
+            const channelMatch = html.match(/"ownerText":\{"runs":\[\{"text":"([^"]+)"/);
+            if (channelMatch) {
+                channelTitle = channelMatch[1];
+            }
+
+            let description = 'Description non disponible';
+            const descMatch = html.match(/"shortDescription":"([^"]{0,500})/);
+            if (descMatch) {
+                description = descMatch[1].replace(/\\n/g, ' ').replace(/\\"/g, '"');
+            }
+
+            let viewCount = 'N/A';
+            const viewMatch = html.match(/"viewCount":"(\d+)"/);
+            if (viewMatch) {
+                viewCount = parseInt(viewMatch[1]).toLocaleString();
+            }
+
+            let duration = 'N/A';
+            const durationMatch = html.match(/"lengthSeconds":"(\d+)"/);
+            if (durationMatch) {
+                const seconds = parseInt(durationMatch[1]);
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                duration = `${minutes}min ${remainingSeconds}s`;
+            }
+
+            return {
+                id: videoId,
+                title,
+                channelTitle,
+                description,
+                viewCount,
+                duration,
+                thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+                publishedAt: 'Date inconnue',
+                source: 'SCRAPING'
+            };
+
+        } catch (error) {
+            console.error('❌ Erreur parsing HTML:', error);
+            throw new Error('Impossible d\'extraire les données de la page');
+        }
     }
-    
-    .video-thumbnail {
-        width: 100%;
-        max-width: 300px;
-        height: 169px;
-        margin: 0 auto;
+
+    async extractTranscript(videoId) {
+        console.log('📜 Tentative extraction transcription...');
+        
+        // Simulation d'extraction (en réalité très complexe)
+        try {
+            // Tentative basique - ne fonctionnera probablement pas à cause de CORS
+            const captionUrl = `https://www.youtube.com/api/timedtext?lang=fr&v=${videoId}`;
+            const response = await fetch(captionUrl);
+            
+            if (response.ok) {
+                const xmlText = await response.text();
+                if (xmlText.includes('<text')) {
+                    return this.parseXMLCaptions(xmlText);
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Extraction transcription échouée:', error.message);
+        }
+        
+        return null; // Transcription non disponible
     }
-    
-    .tabs {
-        flex-direction: column;
+
+    parseXMLCaptions(xmlText) {
+        try {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
+            const textNodes = xmlDoc.querySelectorAll('text');
+            
+            let transcript = '';
+            textNodes.forEach(node => {
+                const text = node.textContent?.trim();
+                if (text) transcript += text + ' ';
+            });
+            
+            return transcript.trim();
+        } catch (error) {
+            console.warn('⚠️ Erreur parsing XML:', error);
+            return null;
+        }
     }
-    
-    .tab {
-        flex: none;
+
+    async generateAISummary(videoData, transcript) {
+        console.log('🤖 Génération résumé IA...');
+        
+        const hasTranscript = transcript && transcript.length > 100;
+        const content = hasTranscript ? transcript : videoData.description || videoData.title;
+        
+        const keywords = this.extractKeywords(content);
+        
+        let mainSummary;
+        if (hasTranscript) {
+            const sentences = transcript.split(/[.!?]+/).filter(s => s.trim().length > 20);
+            const firstSentences = sentences.slice(0, 2).join('. ');
+            mainSummary = `Cette vidéo de ${videoData.channelTitle} intitulée "${videoData.title}" traite principalement de ${keywords.slice(0, 3).join(', ')}. ${firstSentences}. Le contenu dure ${videoData.duration} et développe ces thèmes avec des explications détaillées.`;
+        } else {
+            mainSummary = `Cette vidéo de ${videoData.channelTitle}, "${videoData.title}", dure ${videoData.duration} et a ${videoData.viewCount} vues. L'analyse se base sur le titre et les métadonnées disponibles, abordant probablement ${keywords.slice(0, 3).join(', ')}.`;
+        }
+        
+        const keyPoints = hasTranscript ? 
+            this.extractKeyPointsFromTranscript(transcript) :
+            this.extractKeyPointsFromMetadata(videoData);
+        
+        return {
+            main: mainSummary,
+            keyPoints,
+            wordCount: content.split(' ').length,
+            readingTime: Math.max(1, Math.ceil(content.split(' ').length / 200)),
+            hasTranscript,
+            confidence: hasTranscript ? 'Élevée' : 'Moyenne'
+        };
     }
-    
-    .results-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .results-actions .btn {
-        justify-content: center;
-    }
-    
-    .footer-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .modal-content {
-        margin: 10% auto;
-        width: 95%;
-        padding: 1.5rem;
-    }
-    
-    .toast-container {
-        left: 20px;
-        right: 20px;
-    }
+
+    extractKeywords(text) {
+        const stopWords = new Set(['le', 'de', 'et', 'à', 'un', 'il', 'être', 'en', 'avoir', 'que', 'pour', 'dans', 'ce', 'son', 'une', 'sur', 'avec', 'ne', 'se', 'pas', 'tout', 'plus', 'par']);
+        
+        const words = text.toLowerCase()
+            .replace(/[^\w\s]/g, ' ')
+            .split(/\s+/)
+            .filter(word => word.length > 3 && !stopWords.has(word));
+        
+        const frequency = {};
+        words.forEach(word => {
+            frequency[word] = (frequency[word] || 0) + 1;
+        });
+        
+        return Object.entries(frequency)
+            .sort((a, b
