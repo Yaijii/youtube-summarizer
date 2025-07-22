@@ -3,31 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Summarizer</title>
-    <link rel="stylesheet" href="style.css">
+    <title>YouTube Summarizer - Multi-Engine</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>🎬 YouTube Résumeur</h1>
-        <div class="input-group">
-            <input type="url" 
-                   id="youtubeUrl" 
-                   placeholder="Coller l'URL YouTube ici..." 
-                   autocomplete="off">
-            <button id="summarizeBtn">Résumer 🚀</button>
-        </div>
+        <header class="header">
+            <h1>🎯 YouTube Summarizer</h1>
+            <p>Transcription intelligente multi-moteurs : Whisper + Assembly AI</p>
+        </header>
         
-        <div id="loading" class="loading hidden">
-            <div class="spinner"></div>
-            <p>Analyse en cours...</p>
-        </div>
+        <main class="main-content">
+            <div class="input-section">
+                <div class="url-input-container">
+                    <input 
+                        type="url" 
+                        id="youtubeUrl" 
+                        class="url-input" 
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        autocomplete="off"
+                    >
+                    <button id="summarizeBtn" class="summary-btn">
+                        Résumer 🚀
+                    </button>
+                </div>
+                
+                <div class="tech-indicator">
+                    <span class="tech-badge">🧠 Whisper Local</span>
+                    <span class="tech-badge">🎙️ Assembly AI</span>
+                    <span class="tech-badge">📺 YouTube API</span>
+                    <span class="tech-badge">☁️ Cloud Services</span>
+                </div>
+            </div>
+            
+            <!-- Section Loading -->
+            <div id="loading" class="loading-section hidden">
+                <div class="spinner"></div>
+                <p>Analyse de la vidéo...</p>
+                <div class="progress-steps">
+                    <div class="step active">📥 Extraction</div>
+                    <div class="step">🎙️ Transcription</div>
+                    <div class="step">📝 Résumé</div>
+                </div>
+            </div>
+            
+            <!-- Section Résultat -->
+            <div id="result" class="result-section hidden">
+                <div class="result-header">
+                    <h2>📋 Résumé généré</h2>
+                    <div class="result-actions">
+                        <button class="action-btn copy-btn" onclick="copyToClipboard()">
+                            📋 Copier
+                        </button>
+                        <button class="action-btn download-btn" onclick="downloadSummary()">
+                            💾 Télécharger
+                        </button>
+                    </div>
+                </div>
+                <div class="summary-container">
+                    <div id="summaryText" class="summary-text"></div>
+                </div>
+                <div class="result-footer">
+                    <button class="secondary-btn" onclick="newSummary()">
+                        ✨ Nouveau résumé
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Section Erreur -->
+            <div id="error" class="error-section hidden">
+                <div class="error-content">
+                    <!-- Le contenu d'erreur sera injecté ici -->
+                </div>
+                <div class="error-actions">
+                    <button class="retry-btn" onclick="retryAnalysis()">
+                        🔄 Réessayer
+                    </button>
+                </div>
+            </div>
+        </main>
         
-        <div id="result" class="result hidden">
-            <h3>📝 Résumé :</h3>
-            <div id="summary"></div>
-        </div>
-        
-        <div id="error" class="error hidden"></div>
+        <footer class="footer">
+            <p>🔧 Powered by Whisper AI, Assembly AI & Hugging Face</p>
+            <div class="stats" id="stats">
+                <span>🎯 Taux de succès: <strong id="successRate">--</strong></span>
+                <span>⚡ Dernière méthode: <strong id="lastMethod">--</strong></span>
+            </div>
+        </footer>
     </div>
     
     <script src="script.js"></script>
