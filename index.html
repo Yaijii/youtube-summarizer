@@ -3,95 +3,345 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Summarizer - Multi-Engine</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>🎯 YouTube Summarizer</title>
+    <style>
+        /* CSS intégré pour éviter l'erreur 404 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .summarize-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summarize-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .summarize-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            padding: 30px;
+            background: white;
+        }
+
+        .result h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .summary-text {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-copy {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-download {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-new {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .error {
+            padding: 30px;
+            text-align: center;
+            color: #721c24;
+            background: #f8d7da;
+        }
+
+        .error h3 {
+            margin-bottom: 15px;
+        }
+
+        .btn-retry {
+            background: #dc3545;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .demo-links {
+            padding: 30px;
+            background: #e9ecef;
+            text-align: center;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .demo-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #fd79a8, #fdcb6e);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .demo-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(253, 121, 168, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #2c3e50;
+            color: white;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+            font-size: 14px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .demo-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .demo-btn {
+                width: 200px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
             <h1>🎯 YouTube Summarizer</h1>
-            <p>Transcription intelligente multi-moteurs : Whisper + Assembly AI</p>
+            <p>Analysez et résumez vos vidéos YouTube instantanément</p>
         </header>
         
-        <main class="main-content">
-            <div class="input-section">
-                <div class="url-input-container">
-                    <input 
-                        type="url" 
-                        id="youtubeUrl" 
-                        class="url-input" 
-                        placeholder="https://www.youtube.com/watch?v=..."
-                        autocomplete="off"
-                    >
-                    <button id="summarizeBtn" class="summary-btn">
-                        Résumer 🚀
-                    </button>
-                </div>
-                
-                <div class="tech-indicator">
-                    <span class="tech-badge">🧠 Whisper Local</span>
-                    <span class="tech-badge">🎙️ Assembly AI</span>
-                    <span class="tech-badge">📺 YouTube API</span>
-                    <span class="tech-badge">☁️ Cloud Services</span>
-                </div>
+        <div class="input-section">
+            <input type="url" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." class="url-input">
+            <button id="summarizeBtn" class="summarize-btn">
+                <span>🚀 Résumer</span>
+            </button>
+        </div>
+        
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p id="loadingMessage">🔄 Chargement...</p>
+        </div>
+        
+        <div id="result" class="result hidden">
+            <h3>📋 Résumé généré</h3>
+            <div id="summaryText" class="summary-text"></div>
+            <div class="action-buttons">
+                <button onclick="copyToClipboard()" class="btn btn-copy">📋 Copier</button>
+                <button onclick="downloadSummary()" class="btn btn-download">💾 Télécharger</button>
+                <button onclick="newSummary()" class="btn btn-new">🔄 Nouveau</button>
             </div>
-            
-            <!-- Section Loading -->
-            <div id="loading" class="loading-section hidden">
-                <div class="spinner"></div>
-                <p>Analyse de la vidéo...</p>
-                <div class="progress-steps">
-                    <div class="step active">📥 Extraction</div>
-                    <div class="step">🎙️ Transcription</div>
-                    <div class="step">📝 Résumé</div>
-                </div>
+        </div>
+        
+        <div id="error" class="error hidden">
+            <h3>❌ Une erreur s'est produite</h3>
+            <div id="errorMessage">Erreur inconnue</div>
+            <button onclick="location.reload()" class="btn btn-retry">🔄 Recharger</button>
+        </div>
+        
+        <div class="demo-links">
+            <h4>💡 Testez avec ces exemples :</h4>
+            <div class="demo-buttons">
+                <button onclick="testWithDemo(1)" class="demo-btn">Vidéo Tech</button>
+                <button onclick="testWithDemo(2)" class="demo-btn">Tutoriel</button>
+                <button onclick="testWithDemo(3)" class="demo-btn">Conférence</button>
             </div>
-            
-            <!-- Section Résultat -->
-            <div id="result" class="result-section hidden">
-                <div class="result-header">
-                    <h2>📋 Résumé généré</h2>
-                    <div class="result-actions">
-                        <button class="action-btn copy-btn" onclick="copyToClipboard()">
-                            📋 Copier
-                        </button>
-                        <button class="action-btn download-btn" onclick="downloadSummary()">
-                            💾 Télécharger
-                        </button>
-                    </div>
-                </div>
-                <div class="summary-container">
-                    <div id="summaryText" class="summary-text"></div>
-                </div>
-                <div class="result-footer">
-                    <button class="secondary-btn" onclick="newSummary()">
-                        ✨ Nouveau résumé
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Section Erreur -->
-            <div id="error" class="error-section hidden">
-                <div class="error-content">
-                    <!-- Le contenu d'erreur sera injecté ici -->
-                </div>
-                <div class="error-actions">
-                    <button class="retry-btn" onclick="retryAnalysis()">
-                        🔄 Réessayer
-                    </button>
-                </div>
-            </div>
-        </main>
+        </div>
         
         <footer class="footer">
-            <p>🔧 Powered by Whisper AI, Assembly AI & Hugging Face</p>
-            <div class="stats" id="stats">
-                <span>🎯 Taux de succès: <strong id="successRate">--</strong></span>
-                <span>⚡ Dernière méthode: <strong id="lastMethod">--</strong></span>
-            </div>
+            <p>Version de démonstration - Fonctionne avec intelligence artificielle</p>
         </footer>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
 </html>
