@@ -1,57 +1,176 @@
-// 🔥 YOUTUBE TRANSCRIPT RÉEL - Version GitHub
-console.log('🚀 YouTube Transcript RÉEL initialisé');
+// 🚀 YOUTUBE TRANSCRIPT EXTRACTOR - VERSION RÉELLE
+console.log('🔥 Initialisation YouTube Transcript Extractor...');
 
-class RealYouTubeTranscript {
+class YouTubeTranscriptExtractor {
     constructor() {
-        // API backend gratuite (on va utiliser un proxy)
-        this.API_ENDPOINTS = [
-            'https://api.allorigins.win/raw?url=',  // Proxy CORS gratuit
-            'https://cors-anywhere.herokuapp.com/', // Backup
+        this.currentTranscript = '';
+        this.currentVideoId = '';
+        this.isLoading = false;
+        
+        // APIs proxy pour contourner CORS
+        this.proxyAPIs = [
+            'https://api.allorigins.win/raw?url=',
+            'https://corsproxy.io/?',
+            'https://cors-anywhere.herokuapp.com/'
         ];
+        
         this.init();
     }
 
-    // 🎯 VRAIE EXTRACTION via l'API YouTube interne
-    async extractRealTranscript(videoUrl) {
+    // 🎯 Fonction principale d'extraction
+    async extractTranscript(url = null) {
         try {
-            this.showLoading('🔥 Extraction RÉELLE en cours...');
+            if (this.isLoading) {
+                this.showToast('⏳ Extraction déjà en cours...', 'warning');
+                return;
+            }
+
+            // Récupérer l'URL
+            if (!url) {
+                url = document.getElementById('videoUrl').value.trim();
+            }
             
-            const videoId = this.extractVideoId(videoUrl);
+            if (!url) {
+                this.showError('Veuillez entrer une URL YouTube valide');
+                return;
+            }
+
+            // Extraire l'ID vidéo
+            const videoId = this.extractVideoId(url);
             if (!videoId) {
-                throw new Error('URL YouTube invalide');
+                this.showError('URL YouTube invalide. Format attendu: youtube.com/watch?v=... ou youtu.be/...');
+                return;
             }
 
-            console.log(`🎬 Extraction pour: ${videoId}`);
-
-            // Méthode 1: API interne YouTube (souvent fonctionne)
-            let transcript = await this.tryYouTubeInternalAPI(videoId);
+            this.currentVideoId = videoId;
+            this.showLoading('🔍 Recherche des sous-titres...');
             
-            if (!transcript) {
-                // Méthode 2: Scraping des captions
-                transcript = await this.scrapeCaptions(videoId);
-            }
+            console.log(`🎬 Extraction pour la vidéo: ${videoId}`);
 
-            if (transcript) {
+            // Tentative d'extraction via plusieurs méthodes
+            let transcript = await this.tryMultipleMethods(videoId);
+
+            if (transcript && transcript.length > 50) {
+                this.currentTranscript = transcript;
                 this.displayTranscript(transcript, videoId);
-                return { success: true, transcript, videoId };
+                this.showToast('✅ Transcription extraite avec succès !', 'success');
             } else {
-                throw new Error('Aucune transcription disponible pour cette vidéo');
+                throw new Error('Aucune transcription trouvée pour cette vidéo. Vérifiez que la vidéo a des sous-titres activés.');
             }
 
         } catch (error) {
             console.error('❌ Erreur extraction:', error);
-            this.showError(`Erreur: ${error.message}`);
-            return { success: false, error: error.message };
+            this.showError(error.message || 'Erreur lors de l\'extraction');
         } finally {
             this.hideLoading();
+            this.isLoading = false;
         }
     }
 
+    // 🔧 Essayer plusieurs méthodes d'extraction
+    async tryMultipleMethods(videoId) {
+        const methods = [
+            () => this.extractViaInternalAPI(videoId),
+            () => this.extractViaPageScraping(videoId),
+            () => this.extractViaAlternativeAPI(videoId)
+        ];
+
+        for (let i = 0; i < methods.length; i++) {
+            try {
+                this.updateLoadingText(`🔄 Méthode ${i + 1}/${methods.length}...`);
+                const result = await methods[i]();
+                if (result && result.length > 50) {
+                    console.log(`✅ Succès avec la méthode ${i + 1}`);
+                    return result;
+                }
+            } catch (error) {
+                console.log(`❌ Méthode ${i + 1} échouée:`, error.message);
+            }
+        }
+
+        return null;
+    }
+
     // 🔧 Méthode 1: API interne YouTube
-    async tryYouTubeInternalAPI(videoId) {
+    async extractViaInternalAPI(videoId) {
+        const languages = ['fr', 'en', 'auto'];
+        
+        for (const lang of languages) {
+            try {
+                const captionUrl = `https://www.youtube.com/api/timedtext?lang=${lang}&v=${videoId}&fmt=srv3`;
+                const proxiedUrl = this.proxyAPIs[0] + encodeURIComponent(captionUrl);
+                
+                const response = await fetch(proxiedUrl);
+                if (response.ok) {
+                    const xmlText = await response.text();
+                    const transcript = this.parseXMLCaptions(xmlText);
+                    if (transcript) return transcript;
+                }
+            } catch (error) {
+                console.log(`Langue ${lang} échouée:`, error.message);
+            }
+        }
+        return null;
+    }
+
+    // 🔧 Méthode 2: Scraping de la page YouTube
+    async extractViaPageScraping(videoId) {
         try {
-            const captionUrl = `https://www.youtube.com/api/timedtext?lang=fr&v=${videoId}`;
-            const proxiedUrl = this.API_ENDPOINTS[0] + encodeURIComponent(captionUrl);
+            const pageUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            const proxiedUrl = this.proxyAPIs[0] + encodeURIComponent(pageUrl);
+            
+            const response = await fetch(proxiedUrl);
+            const html = await response.text();
+            
+            // Chercher les données de captions dans le HTML
+            const patterns = [
+                /"captionTracks":\s*(
+
+$$
+[^
+$$
+
+]+\])/,
+                /"captions":\s*\{[^}]*"playerCaptionsTracklistRenderer":\s*\{[^}]*"captionTracks":\s*(
+
+$$
+[^
+$$
+
+]+\])/
+            ];
+
+            for (const pattern of patterns) {
+                const match = html.match(pattern);
+                if (match) {
+                    try {
+                        const captionsData = JSON.parse(match[1]);
+                        const preferredCaption = captionsData.find(c => 
+                            c.languageCode === 'fr' || c.languageCode === 'en'
+                        ) || captionsData[0];
+
+                        if (preferredCaption && preferredCaption.baseUrl) {
+                            const captionResponse = await fetch(this.proxyAPIs[0] + encodeURIComponent(preferredCaption.baseUrl));
+                            const xmlText = await captionResponse.text();
+                            return this.parseXMLCaptions(xmlText);
+                        }
+                    } catch (parseError) {
+                        console.log('Erreur parsing captions:', parseError);
+                    }
+                }
+            }
+        } catch (error) {
+            console.log('Scraping échoué:', error.message);
+        }
+        return null;
+    }
+
+    // 🔧 Méthode 3: API alternative
+    async extractViaAlternativeAPI(videoId) {
+        try {
+            // Essayer avec une autre approche
+            const alternativeUrl = `https://video.google.com/timedtext?lang=fr&v=${videoId}`;
+            const proxiedUrl = this.proxyAPIs[1] + encodeURIComponent(alternativeUrl);
             
             const response = await fetch(proxiedUrl);
             if (response.ok) {
@@ -59,43 +178,7 @@ class RealYouTubeTranscript {
                 return this.parseXMLCaptions(xmlText);
             }
         } catch (error) {
-            console.log('API interne échouée, essai scraping...');
-        }
-        return null;
-    }
-
-    // 🔧 Méthode 2: Scraping intelligent
-    async scrapeCaptions(videoId) {
-        try {
-            // Récupérer la page YouTube
-            const pageUrl = `https://www.youtube.com/watch?v=${videoId}`;
-            const proxiedUrl = this.API_ENDPOINTS[0] + encodeURIComponent(pageUrl);
-            
-            const response = await fetch(proxiedUrl);
-            const html = await response.text();
-            
-            // Extraire les URLs de captions du HTML
-            const captionRegex = /"captionTracks":
-
-$$
-(.*?)
-$$
-
-/;
-            const match = html.match(captionRegex);
-            
-            if (match) {
-                const captionsData = JSON.parse(`[${match[1]}]`);
-                const frenchCaption = captionsData.find(c => c.languageCode === 'fr') || captionsData[0];
-                
-                if (frenchCaption) {
-                    const captionResponse = await fetch(this.API_ENDPOINTS[0] + encodeURIComponent(frenchCaption.baseUrl));
-                    const xmlText = await captionResponse.text();
-                    return this.parseXMLCaptions(xmlText);
-                }
-            }
-        } catch (error) {
-            console.log('Scraping échoué:', error);
+            console.log('API alternative échouée:', error.message);
         }
         return null;
     }
@@ -103,16 +186,38 @@ $$
     // 🔧 Parser XML des captions
     parseXMLCaptions(xmlText) {
         try {
+            if (!xmlText || xmlText.length < 10) return null;
+
+            // Nettoyer le XML
+            const cleanXml = xmlText.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            const xmlDoc = parser.parseFromString(cleanXml, 'text/xml');
+            
+            // Vérifier les erreurs de parsing
+            if (xmlDoc.querySelector('parsererror')) {
+                console.log('Erreur parsing XML');
+                return null;
+            }
+
             const textElements = xmlDoc.getElementsByTagName('text');
             
+            if (textElements.length === 0) {
+                // Essayer avec d'autres balises possibles
+                const altElements = xmlDoc.getElementsByTagName('p') || xmlDoc.getElementsByTagName('body');
+                if (altElements.length === 0) return null;
+            }
+
             let transcript = '';
             for (let element of textElements) {
-                const text = element.textContent || element.innerText;
-                transcript += text.replace(/\n/g, ' ') + ' ';
+                let text = element.textContent || element.innerText || '';
+                // Nettoyer le texte
+                text = text.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+                if (text) {
+                    transcript += text + ' ';
+                }
             }
-            
+
             return transcript.trim();
         } catch (error) {
             console.error('Erreur parsing XML:', error);
@@ -120,137 +225,285 @@ $$
         }
     }
 
-    // 🔧 Extraire ID vidéo
+    // 🔧 Extraire l'ID vidéo de l'URL
     extractVideoId(url) {
         const patterns = [
-            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-            /^([a-zA-Z0-9_-]{11})$/ // ID direct
+            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
+            /^([a-zA-Z0-9_-]{11})$/
         ];
-        
+
         for (const pattern of patterns) {
             const match = url.match(pattern);
-            if (match) return match[1];
+            if (match && match[1]) {
+                return match[1];
+            }
         }
         return null;
     }
 
-    // 🎨 Interface utilisateur
+    // 🎨 Afficher la transcription
     displayTranscript(transcript, videoId) {
-        // Créer ou mettre à jour l'affichage
-        let resultsDiv = document.getElementById('transcriptResults');
-        if (!resultsDiv) {
-            resultsDiv = document.createElement('div');
-            resultsDiv.id = 'transcriptResults';
-            resultsDiv.style.cssText = `
-                background: rgba(255,255,255,0.1);
-                border-radius: 12px;
-                padding: 2rem;
-                margin: 2rem 0;
-                border: 1px solid #4ecdc4;
-            `;
-            document.body.appendChild(resultsDiv);
-        }
-
-        resultsDiv.innerHTML = `
-            <h3 style="color: #4ecdc4; margin-bottom: 1rem;">
-                ✅ Transcription RÉELLE extraite (${videoId})
-            </h3>
-            <div style="background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 8px; max-height: 400px; overflow-y: auto;">
-                <p style="color: #fff; line-height: 1.6; margin: 0;">
-                    ${transcript.substring(0, 2000)}${transcript.length > 2000 ? '...' : ''}
-                </p>
+        const resultsContainer = document.getElementById('resultsContainer');
+        const transcriptDisplay = document.getElementById('transcriptDisplay');
+        
+        // Afficher le container
+        resultsContainer.style.display = 'block';
+        
+        // Créer l'affichage de la transcription
+        transcriptDisplay.innerHTML = `
+            <div class="transcript-header">
+                <h4>📹 Vidéo: ${videoId}</h4>
+                <p><strong>Longueur:</strong> ${transcript.length} caractères</p>
+                <p><strong>Mots:</strong> ${transcript.split(' ').length} mots</p>
             </div>
-            <div style="margin-top: 1rem;">
-                <button onclick="copyTranscript('${transcript.replace(/'/g, "\\'")}')">📋 Copier</button>
-                <button onclick="downloadTranscript('${transcript.replace(/'/g, "\\'")}', '${videoId}')">💾 Télécharger</button>
+            <div class="transcript-text">
+                ${this.formatTranscript(transcript)}
             </div>
         `;
 
-        this.showToast('✅ Transcription RÉELLE extraite !', 'success');
+        // Scroll vers les résultats
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // 🔧 Fonctions utilitaires
-    showLoading(message) {
-        let loading = document.getElementById('loadingReal');
-        if (!loading) {
-            loading = document.createElement('div');
-            loading.id = 'loadingReal';
-            loading.style.cssText = `
-                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                background: rgba(0,0,0,0.8); color: #4ecdc4; padding: 2rem;
-                border-radius: 12px; z-index: 9999; text-align: center;
-            `;
-            document.body.appendChild(loading);
+    // 🔧 Formater la transcription pour l'affichage
+    formatTranscript(transcript) {
+        // Ajouter des paragraphes à intervalles réguliers
+        const words = transcript.split(' ');
+        const paragraphs = [];
+        
+        for (let i = 0; i < words.length; i += 50) {
+            const paragraph = words.slice(i, i + 50).join(' ');
+            paragraphs.push(`<p>${paragraph}</p>`);
         }
-        loading.innerHTML = `<div style="font-size: 1.2rem;">${message}</div>`;
-        loading.style.display = 'block';
+        
+        return paragraphs.join('');
+    }
+
+    // 🔧 Interface utilisateur
+    showLoading(message) {
+        this.isLoading = true;
+        const loadingZone = document.getElementById('loadingZone');
+        const loadingText = document.getElementById('loadingText');
+        
+        loadingText.textContent = message;
+        loadingZone.style.display = 'block';
+        
+        // Cacher les autres zones
+        document.getElementById('resultsContainer').style.display = 'none';
+        document.getElementById('errorZone').style.display = 'none';
+    }
+
+    updateLoadingText(message) {
+        const loadingText = document.getElementById('loadingText');
+        if (loadingText) {
+            loadingText.textContent = message;
+        }
     }
 
     hideLoading() {
-        const loading = document.getElementById('loadingReal');
-        if (loading) loading.style.display = 'none';
+        this.isLoading = false;
+        document.getElementById('loadingZone').style.display = 'none';
     }
 
     showError(message) {
-        this.hideLoading();
-        const error = document.createElement('div');
-        error.style.cssText = `
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
-            background: #e74c3c; color: white; padding: 1rem;
-            border-radius: 8px; max-width: 400px;
-        `;
-        error.textContent = message;
-        document.body.appendChild(error);
-        setTimeout(() => error.remove(), 5000);
-    }
-
-    showToast(message, type) {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed; top: 20px; right: 20px; z-index: 9999;
-            background: ${type === 'success' ? '#27ae60' : '#3498db'};
-            color: white; padding: 1rem; border-radius: 8px;
-        `;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    init() {
-        // Fonctions globales
-        window.extractRealTranscript = (url) => this.extractRealTranscript(url);
-        window.testRealExtraction = () => {
-            const testUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-            this.extractRealTranscript(testUrl);
-        };
-
-        // Fonctions utilitaires globales
-        window.copyTranscript = (text) => {
-            navigator.clipboard.writeText(text);
-            this.showToast('📋 Transcription copiée !', 'success');
-        };
-
-        window.downloadTranscript = (text, videoId) => {
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `transcript_${videoId}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            this.showToast('💾 Fichier téléchargé !', 'success');
-        };
+        const errorZone = document.getElementById('errorZone');
+        const errorText = document.getElementById('errorText');
         
-        console.log('✅ YouTube Transcript RÉEL prêt !');
-        this.showToast('🔥 API réelle configurée !', 'success');
+        errorText.textContent = message;
+        errorZone.style.display = 'block';
+        
+        // Cacher les autres zones
+        this.hideLoading();
+        
+        console.error('❌ Erreur:', message);
+    }
+
+    hideError() {
+        document.getElementById('errorZone').style.display = 'none';
+    }
+
+    showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        
+        toastContainer.appendChild(toast);
+        
+        // Supprimer après 4 secondes
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 4000);
+    }
+
+    // 🔧 Fonctions utilitaires
+    copyTranscript() {
+        if (!this.currentTranscript) {
+            this.showToast('Aucune transcription à copier', 'warning');
+            return;
+        }
+
+        navigator.clipboard.writeText(this.currentTranscript).then(() => {
+            this.showToast('📋 Transcription copiée !', 'success');
+        }).catch(() => {
+            this.showToast('❌ Erreur lors de la copie', 'error');
+        });
+    }
+
+    downloadTranscript() {
+        if (!this.currentTranscript) {
+            this.showToast('Aucune transcription à télécharger', 'warning');
+            return;
+        }
+
+        const blob = new Blob([this.currentTranscript], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        a.href = url;
+        a.download = `transcript_${this.currentVideoId}_${new Date().getTime()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showToast('💾 Transcription téléchargée !', 'success');
+    }
+
+    translateTranscript() {
+        if (!this.currentTranscript) {
+            this.showToast('Aucune transcription à traduire', 'warning');
+            return;
+        }
+
+        const googleTranslateUrl = `https://translate.google.com/?sl=auto&tl=fr&text=${encodeURIComponent(this.currentTranscript.substring(0, 5000))}`;
+        window.open(googleTranslateUrl, '_blank');
+        
+        this.showToast('🌐 Ouverture de Google Translate...', 'info');
+    }
+
+    testWithSample() {
+        // Vidéo de test avec sous-titres garantis
+        const sampleUrls = [
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Rick Roll (a souvent des sous-titres)
+            'https://www.youtube.com/watch?v=jNQXAC9IVRw', // Me at the zoo
+            'https://www.youtube.com/watch?v=9bZkp7q19f0'  // Gangnam Style
+        ];
+        
+        const randomUrl = sampleUrls[Math.floor(Math.random() * sampleUrls.length)];
+        document.getElementById('videoUrl').value = randomUrl;
+        
+        this.showToast('🧪 Test avec vidéo d\'exemple...', 'info');
+        this.extractTranscript(randomUrl);
+    }
+
+    clearResults() {
+        document.getElementById('resultsContainer').style.display = 'none';
+        document.getElementById('errorZone').style.display = 'none';
+        document.getElementById('loadingZone').style.display = 'none';
+        document.getElementById('videoUrl').value = '';
+        
+        this.currentTranscript = '';
+        this.currentVideoId = '';
+        
+        this.showToast('🗑️ Résultats effacés', 'info');
+    }
+
+    // 🎯 Initialisation
+    init() {
+        console.log('✅ YouTube Transcript Extractor initialisé');
+        
+        // Gestion de la touche Entrée
+        const videoInput = document.getElementById('videoUrl');
+        if (videoInput) {
+            videoInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.extractTranscript();
+                }
+            });
+        }
+
+        // Afficher un message de bienvenue
+        setTimeout(() => {
+            this.showToast('🚀 Extracteur prêt ! Entrez une URL YouTube.', 'success');
+        }, 1000);
     }
 }
 
-// Initialisation automatique
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.realTranscript = new RealYouTubeTranscript();
-    });
-} else {
-    window.realTranscript = new RealYouTubeTranscript();
+// 🌟 INSTANCE GLOBALE ET FONCTIONS
+let transcriptExtractor;
+
+// Initialiser quand le DOM est chargé
+document.addEventListener('DOMContentLoaded', () => {
+    transcriptExtractor = new YouTubeTranscriptExtractor();
+    console.log('🔥 Application initialisée avec succès');
+});
+
+// 🎯 FONCTIONS GLOBALES POUR L'HTML
+function extractTranscript() {
+    if (transcriptExtractor) {
+        transcriptExtractor.extractTranscript();
+    } else {
+        console.error('❌ Extracteur non initialisé');
+    }
 }
+
+function testWithSample() {
+    if (transcriptExtractor) {
+        transcriptExtractor.testWithSample();
+    }
+}
+
+function clearResults() {
+    if (transcriptExtractor) {
+        transcriptExtractor.clearResults();
+    }
+}
+
+function copyTranscript() {
+    if (transcriptExtractor) {
+        transcriptExtractor.copyTranscript();
+    }
+}
+
+function downloadTranscript() {
+    if (transcriptExtractor) {
+        transcriptExtractor.downloadTranscript();
+    }
+}
+
+function translateTranscript() {
+    if (transcriptExtractor) {
+        transcriptExtractor.translateTranscript();
+    }
+}
+
+function hideError() {
+    if (transcriptExtractor) {
+        transcriptExtractor.hideError();
+    }
+}
+
+// 🔧 Fonctions utilitaires globales
+window.extractTranscript = extractTranscript;
+window.testWithSample = testWithSample;
+window.clearResults = clearResults;
+window.copyTranscript = copyTranscript;
+window.downloadTranscript = downloadTranscript;
+window.translateTranscript = translateTranscript;
+window.hideError = hideError;
+
+// 🐛 Gestion d'erreurs globales
+window.addEventListener('error', (event) => {
+    console.error('❌ Erreur globale:', event.error);
+});
+
+// 📊 Analytics simples (optionnel)
+function trackUsage(action) {
+    console.log(`📊 Action: ${action} - ${new Date().toISOString()}`);
+}
+
+console.log('🎉 Script YouTube Transcript Extractor chargé avec succès !');
