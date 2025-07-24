@@ -23,7 +23,7 @@
                            id="videoUrl" 
                            placeholder="https://www.youtube.com/watch?v=..." 
                            class="video-input">
-                    <button onclick="extractTranscript()" class="extract-btn">
+                    <button id="extractBtn" class="extract-btn">
                         🚀 EXTRAIRE
                     </button>
                 </div>
@@ -32,65 +32,66 @@
             <!-- Boutons de test -->
             <div class="test-section">
                 <h3>🧪 Tests rapides</h3>
-                <button onclick="testWithSample()" class="test-btn">
+                <button id="testBtn" class="test-btn">
                     Test avec vidéo exemple
                 </button>
-                <button onclick="clearResults()" class="clear-btn">
+                <button id="clearBtn" class="clear-btn">
                     🗑️ Effacer
                 </button>
+            </div>
+
+            <!-- Zone de chargement -->
+            <div id="loadingZone" class="loading-zone" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>🔥 Extraction en cours...</p>
+                <div class="loading-steps">
+                    <div id="step1" class="step">🔍 Analyse de l'URL...</div>
+                    <div id="step2" class="step">🎬 Récupération métadonnées...</div>
+                    <div id="step3" class="step">🔎 Recherche transcription...</div>
+                    <div id="step4" class="step">📜 Parsing des données...</div>
+                </div>
+            </div>
+
+            <!-- Zone d'erreur -->
+            <div id="errorZone" class="error-zone" style="display: none;">
+                <h3>❌ Erreur d'extraction</h3>
+                <p id="errorMessage"></p>
+                <div class="error-suggestions">
+                    <h4>💡 Suggestions :</h4>
+                    <ul>
+                        <li>Vérifiez que la vidéo est publique</li>
+                        <li>Assurez-vous que les sous-titres sont activés</li>
+                        <li>Essayez avec une autre vidéo</li>
+                    </ul>
+                </div>
+                <button id="hideErrorBtn" class="hide-error-btn">Fermer</button>
             </div>
 
             <!-- Zone de résultats -->
             <div id="resultsContainer" class="results-container" style="display: none;">
                 <h3>📜 Transcription extraite</h3>
+                <div class="video-info">
+                    <span>🎬 Vidéo: <span id="videoTitle">Chargement...</span></span>
+                    <span>⏱️ Durée: <span id="videoDuration">--:--</span></span>
+                </div>
                 <div id="transcriptDisplay" class="transcript-display"></div>
                 <div class="action-buttons">
-                    <button onclick="copyTranscript()" class="action-btn">
-                        📋 Copier
-                    </button>
-                    <button onclick="downloadTranscript()" class="action-btn">
-                        💾 Télécharger
-                    </button>
-                    <button onclick="translateTranscript()" class="action-btn">
-                        🌐 Traduire
-                    </button>
+                    <button id="copyBtn" class="action-btn copy-btn">📋 Copier</button>
+                    <button id="downloadBtn" class="action-btn download-btn">💾 Télécharger</button>
+                    <button id="translateBtn" class="action-btn translate-btn">🌐 Traduire</button>
                 </div>
             </div>
 
-            <!-- Zone de loading -->
-            <div id="loadingZone" class="loading-zone" style="display: none;">
-                <div class="spinner"></div>
-                <p id="loadingText">Extraction en cours...</p>
-            </div>
-
-            <!-- Zone d'erreur -->
-            <div id="errorZone" class="error-zone" style="display: none;">
-                <h4>❌ Erreur</h4>
-                <p id="errorText"></p>
-                <button onclick="hideError()" class="error-btn">Fermer</button>
-            </div>
+            <!-- Zone de toast -->
+            <div id="toastContainer" class="toast-container"></div>
         </div>
 
-        <!-- Informations -->
-        <div class="info-section">
-            <h3>ℹ️ Comment ça marche</h3>
-            <ul>
-                <li>✅ Extraction directe depuis les serveurs YouTube</li>
-                <li>✅ Support français et anglais</li>
-                <li>✅ Fonctionne avec la plupart des vidéos publiques</li>
-                <li>⚠️ Nécessite que la vidéo ait des sous-titres</li>
-            </ul>
-        </div>
-
-        <!-- Footer -->
         <footer class="footer">
-            <p>🔧 YouTube Transcript Extractor - Version RÉELLE</p>
+            <p>Made with ❤️ - Version 2024 - GitHub Pages</p>
         </footer>
     </div>
 
-    <!-- Toast notifications -->
-    <div id="toastContainer" class="toast-container"></div>
-
+    <!-- Script APRÈS le HTML -->
     <script src="script.js"></script>
 </body>
 </html>
